@@ -1,0 +1,21 @@
+# Kconfig.soc - UNISOC UWP360
+#
+
+choice
+prompt "Unisoc UWP360 MCU Selection"
+depends on SOC_SERIES_UWP3
+
+config SOC_UWP360
+	bool "uwp360"
+endchoice
+
+if SOC_UWP360
+
+config UWP360_DEBUG
+	bool "Prepend debug header, disabling flash verification"
+	default y
+#	depends on XIP
+#	default y if XIP
+#	default n if !XIP
+
+endif # SOC_UWP360

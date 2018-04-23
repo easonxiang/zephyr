@@ -1,0 +1,22 @@
+# Kconfig.defconfig.uwp360 - UNISOC UWP360
+#
+
+if SOC_UWP360
+
+config SOC
+	string
+	default uwp360
+
+config NUM_IRQS
+	int
+	# must be >= the highest interrupt number used
+	default 179
+
+config SYS_CLOCK_HW_CYCLES_PER_SEC
+	int
+	default 26000000
+
+config TEXT_SECTION_OFFSET
+	default 0x0
+
+endif # SOC_UWP360

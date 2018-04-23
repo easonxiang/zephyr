@@ -1,0 +1,2 @@
+Notes for UWP360:
+ * Text must start at 0x140000 offset in IRAM.

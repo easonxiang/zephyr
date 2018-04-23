@@ -1,0 +1,11 @@
+# Kconfig.defconfig.series - UNISOC UWP Family
+#
+
+if SOC_SERIES_UWP3
+
+source "arch/arm/soc/unisoc_uwp/uwp3/Kconfig.defconfig.uwp360"
+
+config SOC_SERIES
+	default uwp3
+
+endif # SOC_SERIES_UWP3
