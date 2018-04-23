@@ -1,0 +1,13 @@
+config HAS_UWP360
+	bool
+	depends on SOC_FAMILY_UWP
+	default y
+
+if HAS_UWP360
+
+config USE_UWP360_HAL_UART
+	bool
+	default y
+
+
+endif
