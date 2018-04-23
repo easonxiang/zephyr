@@ -1,0 +1,6 @@
+# Kconfig - UNISOC UWP360 EVB Board
+#
+
+config  BOARD_UWP360_EVB
+	bool "UNISOC uwp360 evb"
+	depends on SOC_UWP360

@@ -1,0 +1,9 @@
+# Kconfig - UNISOC UWP360 EVB board configuration
+#
+
+if BOARD_UWP360_EVB
+
+config BOARD
+	default uwp360_evb
+
+endif # BOARD_UWP360_EVB

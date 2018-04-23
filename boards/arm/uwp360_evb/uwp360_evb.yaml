@@ -1,0 +1,7 @@
+identifier: uwp360_evb
+name: UNISOC uwp360 evb board
+type: mcu
+arch: arm
+toolchain:
+  - zephyr
+  - gccarmemb
