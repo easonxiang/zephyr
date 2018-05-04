@@ -11,10 +11,20 @@
 extern "C" {
 #endif
 
+#define BASE_GPIOP0             0x40804000
+#define BASE_GPIOP1             0x40808000
+#define BASE_GPIOP2             0x4080C000
+#define BASE_GPIOP3             0x40810000
+#define BASE_GPIOP4             0x40814000
+#define BASE_GPIOP5             0x40818000
+#define BASE_GPIOP6             0x4081C000
+#define BASE_GPIOP7             0x40820000
+#define BASE_SFC_CFG            0x40890000
 #define BASE_SFC_CFG			0x400
 #define BASE_WDG				0x40010000
 #define CTL_GLBREG_BASE			0x40088000
 
+#define CTL_AON_GLB_BASE		0x4083C000
 #define CTL_AON_PIN_BASE		0x40840000
 
 #define __REG_SET_ADDR(reg)		(reg + 0x1000)

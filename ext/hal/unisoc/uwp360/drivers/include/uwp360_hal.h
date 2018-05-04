@@ -21,6 +21,7 @@ extern "C" {
 #include "hal_sfc_cfg.h"
 #include "hal_sfc_phy.h"
 #include "hal_sfc_hal.h"
+#include "hal_gpio.h"
 
 #define TRUE   (1)
 #define FALSE  (0)

@@ -31,6 +31,7 @@ extern "C" {
 #define REG_WIFI_SYS0			(CTL_APB_BASE + 0x70)
 #define REG_WIFI_SYS1			(CTL_APB_BASE + 0x74)
 
+#define REG_AON_GLB_EB			(CTL_AON_GLB_BASE + 0x24)
 
 
 #define APB_MCU_SOFT_RST	0
@@ -67,6 +68,7 @@ extern "C" {
 		APB_COM_TMR_ = 30,
 		APB_WCI2,
 	};
+#define AON_EB_GPIO	12
 
 	struct uwp360_sys {
 		u32_t rst;
@@ -91,6 +93,17 @@ extern "C" {
 		sci_glb_set(REG_APB_RST, bits);
 		while(wait--){}
 		sci_glb_clr(REG_APB_RST, bits);
+	}
+
+	static inline void uwp360_aon_enable(u32_t bits) {
+		sci_glb_set(REG_AON_GLB_EB, bits);
+	}
+
+	static inline void uwp360_aon_disable(u32_t bits) {
+		sci_glb_clr(REG_AON_GLB_EB, bits);
+	}
+
+	static inline void uwp360_aon_reset(u32_t bits) {
 	}
 
 #ifdef __cplusplus
