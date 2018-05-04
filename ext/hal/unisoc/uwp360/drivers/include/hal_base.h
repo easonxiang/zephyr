@@ -11,6 +11,7 @@
 extern "C" {
 #endif
 
+#define BASE_SFC_CFG			0x400
 #define BASE_WDG				0x40010000
 #define CTL_GLBREG_BASE			0x40088000
 

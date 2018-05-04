@@ -16,7 +16,7 @@
 #define DT_UART0_START		0x40040000
 #define DT_UART1_START		0x40038000
 #define DT_UART_SIZE		0x30
-#define DT_FLASH_START		0x2080000
+#define DT_FLASH_START		0x2000000
 #define DT_FLASH_SIZE		__SIZE_M(4)
 #else
 #error "Flash and RAM sizes not defined for this chip"

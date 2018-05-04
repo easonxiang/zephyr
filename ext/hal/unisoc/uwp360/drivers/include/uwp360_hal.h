@@ -17,6 +17,17 @@ extern "C" {
 #include "hal_uart.h"
 #include "hal_pin.h"
 #include "hal_wdg.h"
+#include "hal_sfc.h"
+#include "hal_sfc_cfg.h"
+#include "hal_sfc_phy.h"
+#include "hal_sfc_hal.h"
+
+#define TRUE   (1)
+#define FALSE  (0)
+
+#define LOGI printk
+#define SCI_ASSERT
+#define mdelay
 
 #ifdef __cplusplus
 }
