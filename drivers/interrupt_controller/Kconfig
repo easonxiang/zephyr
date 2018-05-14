@@ -176,4 +176,6 @@ source "drivers/interrupt_controller/Kconfig.multilevel"
 
 source "drivers/interrupt_controller/Kconfig.s1000"
 
+source "drivers/interrupt_controller/Kconfig.uwp360"
+
 endmenu

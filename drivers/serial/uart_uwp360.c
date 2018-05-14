@@ -10,6 +10,7 @@
 
 #include "uwp360_hal.h"
 #include "uart_uwp360.h"
+#include "../interrupt_controller/intc_uwp360.h"
 
 /* convenience defines */
 #define DEV_CFG(dev) \
@@ -33,17 +34,32 @@ struct uart_uwp360_dev_data_t {
 #endif /* CONFIG_UART_INTERRUPT_DRIVEN */
 };
 
-static struct uart_uwp360_dev_data_t uart_uwp360_dev_data_0 = {
+static struct uart_uwp360_dev_data_t uart_uwp360_dev_data_1 = {
 	.baud_rate = CONFIG_UART_UWP360_SPEED,
 #ifdef CONFIG_UART_INTERRUPT_DRIVEN
 	.cb = NULL,
 #endif /* CONFIG_UART_INTERRUPT_DRIVEN */
 };
 
-static const struct uart_device_config uart_uwp360_dev_cfg_0 = {
+static const struct uart_device_config uart_uwp360_dev_cfg_1 = {
 	.base = (void *)CONFIG_UART_UWP360_BASE,
 	.sys_clk_freq = CONFIG_UART_UWP360_CLOCK,
 };
+
+#ifdef CONFIG_UART_AON_UWP360
+static struct device DEVICE_NAME_GET(uart_uwp360_2);
+static struct uart_uwp360_dev_data_t uart_uwp360_dev_data_2 = {
+	.baud_rate = CONFIG_UART_UWP360_SPEED,
+#ifdef CONFIG_UART_INTERRUPT_DRIVEN
+	.cb = NULL,
+#endif /* CONFIG_UART_INTERRUPT_DRIVEN */
+};
+
+static const struct uart_device_config uart_uwp360_dev_cfg_2 = {
+	.base = (void *)BASE_AON_UART,
+	.sys_clk_freq = CONFIG_UART_UWP360_CLOCK,
+};
+#endif
 
 static int uart_uwp360_poll_in(struct device *dev, unsigned char *c)
 {
@@ -216,20 +232,14 @@ static int uart_uwp360_init(struct device *dev)
 	const struct uart_device_config * const dev_cfg = DEV_CFG(dev);
 	struct uart_uwp360_dev_data_t * const dev_data = DEV_DATA(dev);
 
-	uwp360_sys_enable(BIT(APB_UART0) | BIT(APB_UART1) | BIT(APB_SYST));
-
-	uwp360_sys_reset(BIT(APB_UART0) | BIT(APB_UART1));
+	//uwp360_sys_enable(BIT(APB_EB_UART0) | BIT(APB_EB_SYST));
+	uwp360_sys_enable(BIT(APB_EB_UART0));
+	uwp360_sys_reset(BIT(APB_EB_UART0)); 
 
 	uwp360_uart_set_cdk(uart, DIV_ROUND(dev_cfg->sys_clk_freq,
 			dev_data->baud_rate));
 	uwp360_uart_set_stop_bit_num(uart, 1);
 	uwp360_uart_set_byte_len(uart, 3);
-
-	sys_write32(0, REG_APB_RST);
-	uwp360_sys_enable(BIT(APB_UART0) | BIT(APB_UART1));
-
-	sys_write32(0x4011, REG_PIN_ESMD3);
-	sys_write32(0x411a, REG_PIN_ESMD2);
 
 	uwp360_uart_init(uart);
 
@@ -240,6 +250,7 @@ static int uart_uwp360_init(struct device *dev)
 			DEVICE_GET(uart_uwp360_1), 0);
 	irq_enable(CONFIG_UART_UWP360_IRQ);
 #endif /* CONFIG_UART_INTERRUPT_DRIVEN */
+	printk("uart test.\n");
 
 	return 0;
 }
@@ -266,7 +277,48 @@ static const struct uart_driver_api uart_uwp360_driver_api = {
 };
 
 DEVICE_AND_API_INIT(uart_uwp360_1, CONFIG_UART_UWP360_NAME,
-		    uart_uwp360_init, &uart_uwp360_dev_data_0,
-		    &uart_uwp360_dev_cfg_0,
+		    uart_uwp360_init, &uart_uwp360_dev_data_1,
+		    &uart_uwp360_dev_cfg_1,
 		    PRE_KERNEL_1, CONFIG_KERNEL_INIT_PRIORITY_DEVICE,
 		    (void *)&uart_uwp360_driver_api);
+
+#ifdef CONFIG_UART_AON_UWP360
+static void aon_uart_uwp360_isr(int ch, void *arg)
+{
+	struct device *dev = arg;
+	volatile struct uwp360_uart *uart = UART_STRUCT(dev);
+
+	uwp360_uart_write(uart, uwp360_uart_read(uart));
+}
+
+static int aon_uart_uwp360_init(struct device *dev)
+{
+	volatile struct uwp360_uart *uart = UART_STRUCT(dev);
+	const struct uart_device_config * const dev_cfg = DEV_CFG(dev);
+	struct uart_uwp360_dev_data_t * const dev_data = DEV_DATA(dev);
+
+	uwp360_aon_enable(BIT(AON_EB_UART));
+	uwp360_aon_reset(BIT(AON_RST_UART));
+
+	uwp360_uart_set_cdk(uart, DIV_ROUND(dev_cfg->sys_clk_freq,
+			dev_data->baud_rate));
+	uwp360_uart_set_stop_bit_num(uart, 1);
+	uwp360_uart_set_byte_len(uart, 3);
+
+	uwp360_uart_init(uart);
+
+#ifdef CONFIG_UART_INTERRUPT_DRIVEN
+	uwp360_aon_intc_set_irq_callback(AON_INT_UART, aon_uart_uwp360_isr, dev);
+	uwp360_aon_irq_enable(AON_INT_UART);
+	uart_uwp360_irq_rx_enable(dev);
+#endif /* CONFIG_UART_INTERRUPT_DRIVEN */
+
+	return 0;
+}
+
+DEVICE_AND_API_INIT(uart_uwp360_2, UNISOC_UART_40838000_LABEL,
+		    aon_uart_uwp360_init, &uart_uwp360_dev_data_2,
+		    &uart_uwp360_dev_cfg_2,
+		    PRE_KERNEL_1, CONFIG_KERNEL_INIT_PRIORITY_DEVICE,
+		    (void *)&uart_uwp360_driver_api);
+#endif

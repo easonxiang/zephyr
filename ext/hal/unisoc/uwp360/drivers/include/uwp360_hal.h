@@ -22,13 +22,22 @@ extern "C" {
 #include "hal_sfc_phy.h"
 #include "hal_sfc_hal.h"
 #include "hal_gpio.h"
+#include "hal_ipi.h"
+#include "hal_intc.h"
+#include "hal_eic.h"
+#include "hal_aon_clk.h"
+#include "hal_aon_glb.h"
 
 #define TRUE   (1)
 #define FALSE  (0)
 
 #define LOGI printk
-#define SCI_ASSERT
-#define mdelay
+#define SCI_ASSERT(a)
+#define mdelay k_sleep
+
+#ifndef BIT
+#define BIT(nr) (1UL << (nr))
+#endif
 
 #ifdef __cplusplus
 }

@@ -1,7 +1,8 @@
 #include <kernel.h>
+#include <string.h>
 #include <uwp360_hal.h>
 
-static SFC_REG_T *reg_sfc = (SFC_REG_T *) BASE_SFC_CFG;
+static SFC_REG_T *reg_sfc = (SFC_REG_T *) BASE_AON_SFC_CFG;
 u32_t cmd_buf_index = 0;
 u32_t read_buf_index = 7;
 

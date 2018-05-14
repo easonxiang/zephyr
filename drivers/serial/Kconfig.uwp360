@@ -7,3 +7,13 @@ menuconfig UART_UWP360
 	depends on SOC_FAMILY_UWP
 	help
 	  This option enables the UWP360 UART driver, for UART_0.
+
+menuconfig UART_AON_UWP360
+	depends on SOC_SERIES_UWP3
+	bool "UWP360 AON UART driver"
+	default n
+	select SERIAL_HAS_DRIVER
+	select SERIAL_SUPPORT_INTERRUPT
+	depends on SOC_FAMILY_UWP
+	help
+	  This option enables the UWP360 AON UART driver.

@@ -11,10 +11,6 @@
 extern "C" {
 #endif
 
-#ifndef BIT
-#define BIT(nr) (1UL << (nr))
-#endif
-
 #define MODE_UART	0
 #define MODE_IRDA	1
 

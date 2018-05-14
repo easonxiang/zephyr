@@ -1,0 +1,61 @@
+#
+# Copyright (c) 2018, UNISOC Incorporated
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+menuconfig INTC_UWP360
+	bool "UNISOC UWP360 Interrupt Controller Driver"
+	depends on SOC_FAMILY_UWP
+	default y
+	help
+	  Enable INTC driver for UNISOC UWP360 MCU.
+
+config INTC_UWP360_DEVICE_NAME
+	string "Device name for Interrupt Controller"
+	depends on INTC_UWP360
+	default "UWP360_INTC"
+	help
+	  Set the name used by INTC device during registration.
+
+menuconfig AON_INTC_UWP360
+	bool "UNISOC UWP360 AON Interrupt Controller Driver"
+	depends on SOC_FAMILY_UWP
+	default y
+	help
+	  Enable AON INTC driver for UNISOC UWP360 MCU.
+
+config AON_INTC_UWP360_DEVICE_NAME
+	string "Device name for AON Interrupt Controller"
+	depends on INTC_UWP360
+	default "UWP360_AON_INTC"
+	help
+	  Set the name used by AON INTC device during registration.
+	  
+menuconfig EIC_UWP360
+	bool "UNISOC UWP360 Interrupt Controller Driver"
+	depends on SOC_FAMILY_UWP
+	default y
+	help
+	  Enable EIC driver for UNISOC UWP360 MCU.
+
+config EIC_UWP360_DEVICE_NAME
+	string "Device name for Interrupt Controller"
+	depends on EIC_UWP360
+	default "UWP360_EIC"
+	help
+	  Set the name used by EIC device during registration.
+
+menuconfig IPI_UWP360
+	bool "UNISOC UWP360 IPI Interrupt Controller Driver"
+	depends on SOC_FAMILY_UWP
+	default y
+	help
+	  Enable IPI driver for UNISOC UWP360 MCU.
+
+config IPI_UWP360_DEVICE_NAME
+	string "Device name for IPI Interrupt Controller"
+	depends on IPI_UWP360
+	default "UWP360_IPI"
+	help
+	  Set the name used by IPI device during registration.

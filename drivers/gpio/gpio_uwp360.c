@@ -13,6 +13,7 @@
 
 #include "uwp360_hal.h"
 #include "gpio_utils.h"
+#include "../interrupt_controller/intc_uwp360.h"
 
 struct gpio_uwp360_config {
 	/* base address of GPIO port */
@@ -28,8 +29,7 @@ struct gpio_uwp360_data {
 	u32_t pin_callback_enables;
 };
 static const struct gpio_uwp360_config gpio_uwp360_p0_config = {
-	.port_base = BASE_GPIOP0,
-	.irq_num = INT_GPIOP0,
+	.port_base = BASE_AON_GPIOP0,
 };
 
 static struct device DEVICE_NAME_GET(gpio_uwp360_p0);
@@ -71,6 +71,8 @@ static inline int gpio_uwp360_config(struct device *port,
 		uwp360_gpio_int_clear(base, BIT(pin));
 		uwp360_gpio_int_enable(base, BIT(pin));
 	}
+
+	uwp360_gpio_enable(base, BIT(pin));
 
 	return 0;
 }
@@ -121,11 +123,15 @@ static int gpio_uwp360_enable_callback(struct device *dev,
 				    int access_op, u32_t pin)
 {
 	struct gpio_uwp360_data *data = DEV_DATA(dev);
+	const struct gpio_uwp360_config *gpio_config = DEV_CFG(dev);
+	u32_t base = gpio_config->port_base;
 	
 	if (access_op == GPIO_ACCESS_BY_PIN) {
 		data->pin_callback_enables |= (1 << pin);
+		uwp360_gpio_input_enable(base, BIT(pin));
 	} else {
 		data->pin_callback_enables = 0xFFFFFFFF;
+		uwp360_gpio_input_enable(base, 0xFFFF);
 	}
 
 	return 0;
@@ -136,17 +142,21 @@ static int gpio_uwp360_disable_callback(struct device *dev,
 				     int access_op, u32_t pin)
 {
 	struct gpio_uwp360_data *data = DEV_DATA(dev);
+	const struct gpio_uwp360_config *gpio_config = DEV_CFG(dev);
+	u32_t base = gpio_config->port_base;
 
 	if (access_op == GPIO_ACCESS_BY_PIN) {
 		data->pin_callback_enables &= ~(1 << pin);
+		uwp360_gpio_input_disable(base, BIT(pin));
 	} else {
 		data->pin_callback_enables = 0;
+		uwp360_gpio_input_disable(base, 0xFFFF);
 	}
 
 	return 0;
 }
 
-static void gpio_uwp360_isr(void *arg)
+static void gpio_uwp360_isr(int ch, void *arg)
 {
 	struct device *dev = arg;
 	const struct gpio_uwp360_config *gpio_config = DEV_CFG(dev);
@@ -181,17 +191,20 @@ static int gpio_uwp360_p0_init(struct device *dev)
 	const struct gpio_uwp360_config *gpio_config = DEV_CFG(dev);
 	u32_t base = gpio_config->port_base;
 
-	uwp360_aon_enable(BIT(AON_EB_GPIO));
-	uwp360_aon_reset(BIT(AON_EB_GPIO));
+	uwp360_aon_enable(BIT(AON_EB_GPIO0));
+	uwp360_aon_reset(BIT(AON_RST_GPIO0));
 	/* enable all gpio read/write by default */
 	uwp360_gpio_enable(base, 0xFFFF);
-#if 0
-	IRQ_CONNECT(INT_GPIOP0, 3,
-		    gpio_uwp360_isr, DEVICE_GET(gpio_uwp360_p0), 0);
 
-	//MAP_IntPendClear(INT_GPIOA3);
-	irq_enable(INT_GPIOP0);
+#if 0
+	uwp360_eic_set_callback(EIC_CH_GPIO0, gpio_uwp360_isr, dev);
+	uwp360_eic_set_trigger(EIC_CH_GPIO0, EIC_LOW_LEVEL_TRIGGER);
+	uwp360_eic_enable(EIC_CH_GPIO0);
 #endif
+	uwp360_gpio_int_disable(base, 0xFFFF);
+	uwp360_gpio_disable(base, 0xFFFF);
+	uwp360_aon_intc_set_irq_callback(AON_INT_GPIO0, gpio_uwp360_isr, dev);
+	//uwp360_aon_irq_enable(AON_INT_GPIO0);
 
 	return 0;
 }

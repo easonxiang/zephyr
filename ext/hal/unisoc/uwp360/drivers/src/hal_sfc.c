@@ -1,7 +1,245 @@
 #include <kernel.h>
+#include <string.h>
 #include <uwp360_hal.h>
 
 //struct spi_flash_struct g_sn;
+static struct spi_flash_params giga_flash_table[] = {
+	{
+		GIGA_ID_25LQ16,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.pages_per_sector = 
+		16,			//.nr_sectors = 
+		32,			//.nr_blocks = 
+		QPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_2CLOCKS,		//.dummy_clocks = 
+		"25LQ16",		//.name = 
+	},
+	{
+		GIGA_ID_25LQ32B,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.pages_per_sector = 
+		16,			//.nr_sectors = 
+		64,			//.nr_blocks = 
+		QPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_2CLOCKS,		//.dummy_clocks = 
+		"25LQ32B",		//.name = 
+	},
+	{
+		GIGA_ID_25LQ64B,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.pages_per_sector = 
+		16,			//.nr_sectors = 
+		128,			//.nr_blocks = 
+		QPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_2CLOCKS,		//.dummy_clocks = 
+		"25LQ64B",		//.name = 
+	},
+	{
+		GIGA_ID_25LQ128,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.pages_per_sector = 
+		16,			//.nr_sectors = 
+		256,			//.nr_blocks = 
+		QPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_2CLOCKS,		//.dummy_clocks = 
+		"25LQ128",		//.name = 
+	},
+	{
+		GIGA_ID_25Q64B,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.pages_per_sector = 
+		16,			//.nr_sectors = 
+		128,			//.nr_blocks = 
+		SPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_2CLOCKS,		//.dummy_clocks = 
+		"25Q64B",		//.name = 
+	},
+	{
+		GIGA_ID_25Q32B,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.pages_per_sector = 
+		16,			//.nr_sectors = 
+		64,			//.nr_blocks = 
+		SPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_2CLOCKS,		//.dummy_clocks = 
+		"25Q32B",		//.name = 
+	},
+	{
+		GIGA_ID_25Q32B,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.pages_per_sector = 
+		16,			//.nr_sectors = 
+		64,			//.nr_blocks = 
+		SPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_2CLOCKS,		//.dummy_clocks = 
+		"25Q32B",		//.name = 
+	},
+};
+
+
+
+static struct spi_flash_params winbond_flash_table[] = {
+	{
+		WINBOND_ID_W25X16,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.sector_size = 
+		16,			//.nr_sectors = 
+		32,			//.nr_blocks = 
+		QPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_4CLOCKS,		//.dummy_clocks = 
+		"W25X16",		//.name = 
+	},
+	{
+		WINBOND_ID_W25X32,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.pages_per_sector = 
+		16,			//.nr_sectors = 
+		64,			//.nr_blocks = 
+		QPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_4CLOCKS,		//.dummy_clocks = 
+		"W25X32",		//.name = 
+	},
+	{
+		WINBOND_ID_W25X64,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.pages_per_sector = 
+		16,			//.nr_sectors = 
+		128,			//.nr_blocks = 
+		QPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_4CLOCKS,		//.dummy_clocks = 
+		"W25X64",		//.name = 
+	},
+	{
+		WINBOND_ID_W25Q32DW,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.pages_per_sector = 
+		16,			//.nr_sectors = 
+		64,			//.nr_blocks = 
+		QPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_4CLOCKS,		//.dummy_clocks = 
+		"W25Q32DW",		//.name = 
+	},
+	{
+		WINBOND_ID_W25Q64FW,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.pages_per_sector = 
+		16,			//.nr_sectors = 
+		128,			//.nr_blocks = 
+		QPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_4CLOCKS,		//.dummy_clocks = 
+		"W25Q64FW",		//.name = 
+	},
+	{
+		WINBOND_ID_W25Q128FW,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.pages_per_sector = 
+		16,			//.nr_sectors = 
+		256,			//.nr_blocks = 
+		QPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_4CLOCKS,		//.dummy_clocks = 
+		"W25Q128FW",		//.name = 
+	},
+	{
+		WINBOND_ID_W25Q16,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.pages_per_sector = 
+		16,			//.nr_sectors = 
+		32,			//.nr_blocks = 
+		QPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_4CLOCKS,		//.dummy_clocks = 
+		"W25Q16",		//.name = 
+	},
+	{
+		WINBOND_ID_W25Q32FV,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.pages_per_sector = 
+		16,			//.nr_sectors = 
+		64,			//.nr_blocks = 
+		QPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_4CLOCKS,		//.dummy_clocks = 
+		"W25Q32FV",		//.name = 
+	},
+	{
+		WINBOND_ID_W25Q64FV,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.pages_per_sector = 
+		16,			//.nr_sectors = 
+		128,			//.nr_blocks = 
+		QPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_4CLOCKS,		//.dummy_clocks = 
+		"W25Q64FV",		//.name = 
+	},
+	{
+		WINBOND_ID_W25Q128FV,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.pages_per_sector = 
+		16,			//.nr_sectors = 
+		256,			//.nr_blocks = 
+		QPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_4CLOCKS,		//.dummy_clocks = 
+		"W25Q128FV",		//.name = 
+	},
+	{
+		WINBOND_ID_W25Q256FV,	//.idcode1 = 
+		0,			//.idcode2 = 
+		256,			//.page_size = 
+		16,			//.pages_per_sector = 
+		16,			//.nr_sectors = 
+		512,			//.nr_blocks = 
+		QPI_MODE,		//.support_qpi = 
+		READ_FREQ_104M,	//.read_freq_max = 
+		DUMMY_4CLOCKS,		//.dummy_clocks = 
+		"W25Q256FV",		//.name = 
+	},
+};
+
+
+static struct spi_flash_spec_s spi_flash_spec_table[] = {
+	{
+		GIGA_MFID,
+		ARRAY_SIZE(giga_flash_table),
+		giga_flash_table,
+	},
+	{
+		WINBOND_MFID,
+		ARRAY_SIZE(winbond_flash_table),
+		winbond_flash_table,
+	},
+};
 
 void create_cmd(SFC_CMD_DES_T * cmd_desc_ptr, u32_t cmd, u32_t byte_len,
 		CMD_MODE_E cmd_mode, BIT_MODE_E bit_mode, SEND_MODE_E send_mode)
@@ -14,7 +252,7 @@ void create_cmd(SFC_CMD_DES_T * cmd_desc_ptr, u32_t cmd, u32_t byte_len,
 }
 
 void spiflash_read_write(SFC_CMD_DES_T * cmd_des_ptr, u32_t cmd_len,
-			 u32_t * din)
+		u32_t * din)
 {
 	u32_t i;
 	u32_t *read_ptr = din;
@@ -66,7 +304,7 @@ void spiflash_read_write_sec(SFC_CMD_DES_T * cmd_des_ptr, u32_t cmd_len)
 }
 
 static void spiflash_get_statue(struct spi_flash *flash, u8_t * status1,
-				u8_t * status2)
+		u8_t * status2)
 {
 	u8_t cmd = 0;
 
@@ -77,7 +315,7 @@ static void spiflash_get_statue(struct spi_flash *flash, u8_t * status1,
 	spiflash_cmd_read(flash, &cmd, 1, 0xFFFFFFFF, status2, 1);
 
 	LOGI("SF: spiflash status: status 1 = 0x%x, status2 = 0x%x\n",
-	     *status1, *status2);
+			*status1, *status2);
 }
 
 BYTE_NUM_E spi_flash_addr(u32_t * addr, u32_t support_4addr)
@@ -93,16 +331,16 @@ BYTE_NUM_E spi_flash_addr(u32_t * addr, u32_t support_4addr)
 	if (support_4addr == TRUE) {
 #ifdef BIG_ENDIAN
 		*addr = (cmd[3] << 0) | (cmd[2] << 8) |
-		    (cmd[1] << 16) | (cmd[0] << 24);
+			(cmd[1] << 16) | (cmd[0] << 24);
 #else
 		*addr = (cmd[3] << 0) | (cmd[2] << 8) |
-		    (cmd[1] << 16) | (cmd[0] << 24);
+			(cmd[1] << 16) | (cmd[0] << 24);
 #endif
 		return (BYTE_NUM_4);
 	} else {
 #ifdef BIG_ENDIAN
 		*addr = (cmd[3] << 0) | (cmd[2] << 8) |
-		    (cmd[1] << 16) | (cmd[0] << 32);
+			(cmd[1] << 16) | (cmd[0] << 32);
 #else
 		*addr = (cmd[2] << 0) | (cmd[1] << 8) | (cmd[0] << 16);
 #endif
@@ -120,23 +358,23 @@ struct spi_flash_params *spiflash_scan(void)
 	struct spi_flash_params *params = NULL;
 
 	CREATE_CMD_(cmd_desc[0], CMD_READ_ID, BYTE_NUM_1, CMD_MODE_WRITE,
-		    BIT_MODE_1);
+			BIT_MODE_1);
 
 	CREATE_CMD_(cmd_desc[1], 0, BYTE_NUM_3, CMD_MODE_READ, BIT_MODE_1);
 	spiflash_read_write(cmd_desc, 2, (u32_t *) idcode);
 
 	LOGI("SF: new Got idcode 0: 0x%x 1:0x%x 2:0x%x 3:0x%x 4:0x%x\n",
-	     idcode[0], idcode[1], idcode[2], idcode[3], idcode[4]);
+			idcode[0], idcode[1], idcode[2], idcode[3], idcode[4]);
 #if 0
 	CREATE_CMD_(cmd_desc[0], CMD_READ_ID, BYTE_NUM_1,
-		    CMD_MODE_WRITE, BIT_MODE_1);
+			CMD_MODE_WRITE, BIT_MODE_1);
 	spi_write(cmd_desc, 1, NULL);
 
 	CREATE_CMD_(cmd_desc[0], 0, BYTE_NUM_3, CMD_MODE_READ, BIT_MODE_1);
 	spi_read(cmd_desc, 1, (u32_t *) idcode);
 
 	LOGI("SF: 2new Got idcode 0: 0x%x 1:0x%x 2:0x%x 3:0x%x 4:0x%x\n",
-	     idcode[0], idcode[1], idcode[2], idcode[3], idcode[4]);
+			idcode[0], idcode[1], idcode[2], idcode[3], idcode[4]);
 #endif
 	manufacturer_id = (u16_t) idcode[0];
 	jedec = idcode[1] << 8 | idcode[2];
@@ -160,7 +398,7 @@ struct spi_flash_params *spiflash_scan(void)
 		if (params->idcode1 == jedec) {
 			if (params->idcode2 == ext_jedec)
 				LOGI("SF: get ID %04x %04x\n", jedec,
-				     ext_jedec);
+						ext_jedec);
 			break;
 		}
 	}
@@ -174,8 +412,8 @@ struct spi_flash_params *spiflash_scan(void)
 }
 
 LOCK_PATTERN_E spiflash_get_lock_pattern(u32_t start_addr, u32_t size,
-					 const struct spi_flash_lock_desc *
-					 lock_table, u32_t lock_table_size)
+		const struct spi_flash_lock_desc *
+		lock_table, u32_t lock_table_size)
 {
 	LOCK_PATTERN_E lock_pattern = LOCK_PATTERN_MAX;
 	u32_t i = 0, j = 0;
@@ -187,11 +425,11 @@ LOCK_PATTERN_E spiflash_get_lock_pattern(u32_t start_addr, u32_t size,
 
 		for (j = 0; j < ARRAY_SIZE(sf_lock_pattern); j++) {
 			if ((lock_pattern == sf_lock_pattern[j].lock_pattern) &&
-			    (start_addr == sf_lock_pattern[j].start_addr) &&
-			    (size >= sf_lock_pattern[j].size)) {
+					(start_addr == sf_lock_pattern[j].start_addr) &&
+					(size >= sf_lock_pattern[j].size)) {
 				if (size - sf_lock_pattern[j].size < delta_size) {
 					delta_size =
-					    size - sf_lock_pattern[j].size;
+						size - sf_lock_pattern[j].size;
 					lock_match_index = j;
 				}
 			}
@@ -203,11 +441,11 @@ LOCK_PATTERN_E spiflash_get_lock_pattern(u32_t start_addr, u32_t size,
 	}
 
 	return (LOCK_PATTERN_E) (sf_lock_pattern
-				 [lock_match_index].lock_pattern);
+			[lock_match_index].lock_pattern);
 }
 
 void spiflash_set_xip(SFC_CMD_DES_T * cmd_des_ptr, u32_t cmd_len,
-		      BIT_MODE_E bit_mode)
+		BIT_MODE_E bit_mode)
 {
 	u32_t i;
 
@@ -228,7 +466,7 @@ void spiflash_set_xip(SFC_CMD_DES_T * cmd_des_ptr, u32_t cmd_len,
 }
 
 void spiflash_set_xip_cmd(struct spi_flash *flash, u8_t cmd_read,
-			  u8_t dummy_bytes)
+		u8_t dummy_bytes)
 {
 	SFC_CMD_DES_T cmd_desc[5];
 	u32_t cmd_desc_size = 0;
@@ -247,7 +485,7 @@ void spiflash_set_xip_cmd(struct spi_flash *flash, u8_t cmd_read,
 		bitmode_dummy = BIT_MODE_4;
 		bitmode_data = BIT_MODE_4;
 		CREATE_CMD_(cmd_desc[0], cmd_read, BYTE_NUM_1, CMD_MODE_WRITE,
-			    bitmode_cmd);
+				bitmode_cmd);
 	} else {
 		bitmode_cmd = BIT_MODE_1;
 		bitmode_addr = BIT_MODE_1;
@@ -286,59 +524,59 @@ void spiflash_set_xip_cmd(struct spi_flash *flash, u8_t cmd_read,
 			bitmode_data = BIT_MODE_1;
 		}
 		CREATE_CMD_(cmd_desc[0], cmd_read, BYTE_NUM_1, CMD_MODE_WRITE,
-			    bitmode_cmd);
+				bitmode_cmd);
 	}
 
 	if (TRUE == flash->support_4addr) {
 		CREATE_CMD_(cmd_desc[1], 0, BYTE_NUM_4, CMD_MODE_WRITE,
-			    bitmode_addr);
+				bitmode_addr);
 	} else {
 		CREATE_CMD_(cmd_desc[1], 0, BYTE_NUM_3, CMD_MODE_WRITE,
-			    bitmode_addr);
+				bitmode_addr);
 	}
 
 	if (dummy_bytes > 4) {
 		dummy[0] = BYTE_NUM_4;
 		switch (dummy_bytes % 4) {
-		case 1:
-			dummy[1] = BYTE_NUM_1;
-			break;
-		case 2:
-			dummy[1] = BYTE_NUM_2;
-			break;
-		case 3:
-			dummy[1] = BYTE_NUM_3;
-			break;
-		case 4:
-			dummy[1] = BYTE_NUM_4;
-			break;
-		default:
-			break;
+			case 1:
+				dummy[1] = BYTE_NUM_1;
+				break;
+			case 2:
+				dummy[1] = BYTE_NUM_2;
+				break;
+			case 3:
+				dummy[1] = BYTE_NUM_3;
+				break;
+			case 4:
+				dummy[1] = BYTE_NUM_4;
+				break;
+			default:
+				break;
 		}
 		CREATE_CMD_(cmd_desc[2], 0, dummy[0], CMD_MODE_WRITE,
-			    bitmode_dummy);
+				bitmode_dummy);
 		CREATE_CMD_(cmd_desc[3], 0, dummy[1], CMD_MODE_WRITE,
-			    bitmode_dummy);
+				bitmode_dummy);
 		cmd_desc_size = 4;
 	} else if (dummy_bytes > 0) {
 		switch (dummy_bytes) {
-		case 1:
-			dummy[0] = BYTE_NUM_1;
-			break;
-		case 2:
-			dummy[0] = BYTE_NUM_2;
-			break;
-		case 3:
-			dummy[0] = BYTE_NUM_3;
-			break;
-		case 4:
-			dummy[0] = BYTE_NUM_4;
-			break;
-		default:
-			break;
+			case 1:
+				dummy[0] = BYTE_NUM_1;
+				break;
+			case 2:
+				dummy[0] = BYTE_NUM_2;
+				break;
+			case 3:
+				dummy[0] = BYTE_NUM_3;
+				break;
+			case 4:
+				dummy[0] = BYTE_NUM_4;
+				break;
+			default:
+				break;
 		}
 		CREATE_CMD_(cmd_desc[2], 0, dummy[0], CMD_MODE_WRITE,
-			    bitmode_dummy);
+				bitmode_dummy);
 		cmd_desc_size = 3;
 	} else {
 		cmd_desc_size = 2;
@@ -348,8 +586,8 @@ void spiflash_set_xip_cmd(struct spi_flash *flash, u8_t cmd_read,
 }
 
 void spiflash_cmd_read(struct spi_flash *flash, const u8_t * cmd,
-		       u32_t cmd_len, u32_t address, const void *data_in,
-		       u32_t data_len)
+		u32_t cmd_len, u32_t address, const void *data_in,
+		u32_t data_len)
 {
 	SFC_CMD_DES_T cmd_desc[4];
 	BIT_MODE_E bitmode = BIT_MODE_1;
@@ -365,53 +603,53 @@ void spiflash_cmd_read(struct spi_flash *flash, const u8_t * cmd,
 	}
 
 	CREATE_CMD_(cmd_desc[cmd_idx++], cmd[0], BYTE_NUM_1, CMD_MODE_WRITE,
-		    bitmode);
+			bitmode);
 
 	if (address != 0xFFFFFFFF) {
 		CREATE_CMD_REV(cmd_desc[cmd_idx++], address, BYTE_NUM_3,
-			       CMD_MODE_WRITE, bitmode);
+				CMD_MODE_WRITE, bitmode);
 	}
 
 	if (data_len > 4) {
 		switch (data_len % 4) {
-		case 1:
-			data_byte_num = BYTE_NUM_1;
-			break;
-		case 2:
-			data_byte_num = BYTE_NUM_2;
-			break;
-		case 3:
-			data_byte_num = BYTE_NUM_3;
-			break;
-		case 0:
-			data_byte_num = BYTE_NUM_4;
-			break;
-		default:
-			break;
+			case 1:
+				data_byte_num = BYTE_NUM_1;
+				break;
+			case 2:
+				data_byte_num = BYTE_NUM_2;
+				break;
+			case 3:
+				data_byte_num = BYTE_NUM_3;
+				break;
+			case 0:
+				data_byte_num = BYTE_NUM_4;
+				break;
+			default:
+				break;
 		}
 		CREATE_CMD_(cmd_desc[cmd_idx++], 0, BYTE_NUM_4, CMD_MODE_READ,
-			    bitmode);
+				bitmode);
 		CREATE_CMD_(cmd_desc[cmd_idx++], 0, data_byte_num,
-			    CMD_MODE_READ, bitmode);
+				CMD_MODE_READ, bitmode);
 	} else if (data_len > 0) {
 		switch (data_len) {
-		case 1:
-			data_byte_num = BYTE_NUM_1;
-			break;
-		case 2:
-			data_byte_num = BYTE_NUM_2;
-			break;
-		case 3:
-			data_byte_num = BYTE_NUM_3;
-			break;
-		case 0:
-			data_byte_num = BYTE_NUM_4;
-			break;
-		default:
-			break;
+			case 1:
+				data_byte_num = BYTE_NUM_1;
+				break;
+			case 2:
+				data_byte_num = BYTE_NUM_2;
+				break;
+			case 3:
+				data_byte_num = BYTE_NUM_3;
+				break;
+			case 0:
+				data_byte_num = BYTE_NUM_4;
+				break;
+			default:
+				break;
 		}
 		CREATE_CMD_(cmd_desc[cmd_idx++], 0, data_byte_num,
-			    CMD_MODE_READ, bitmode);
+				CMD_MODE_READ, bitmode);
 	} else {
 
 	}
@@ -420,7 +658,7 @@ void spiflash_cmd_read(struct spi_flash *flash, const u8_t * cmd,
 }
 
 void spiflash_cmd_write(struct spi_flash *flash, const u8_t * cmd,
-			u32_t cmd_len, const void *data_out, u32_t data_len)
+		u32_t cmd_len, const void *data_out, u32_t data_len)
 {
 	SFC_CMD_DES_T cmd_desc[4];
 	BIT_MODE_E bitmode = BIT_MODE_1;
@@ -444,55 +682,55 @@ void spiflash_cmd_write(struct spi_flash *flash, const u8_t * cmd,
 	}
 
 	switch (cmd_len) {
-	case 1:
-		cmd_byte_num = BYTE_NUM_1;
-		break;
-	case 2:
-		cmd_byte_num = BYTE_NUM_2;
-		break;
-	case 3:
-		cmd_byte_num = BYTE_NUM_3;
-		break;
-	case 4:
-		cmd_byte_num = BYTE_NUM_4;
-		break;
-	default:
-		break;
+		case 1:
+			cmd_byte_num = BYTE_NUM_1;
+			break;
+		case 2:
+			cmd_byte_num = BYTE_NUM_2;
+			break;
+		case 3:
+			cmd_byte_num = BYTE_NUM_3;
+			break;
+		case 4:
+			cmd_byte_num = BYTE_NUM_4;
+			break;
+		default:
+			break;
 	}
 
 	switch (data_len) {
-	case 1:
-		data_byte_num = BYTE_NUM_1;
-		break;
-	case 2:
-		data_byte_num = BYTE_NUM_2;
-		break;
-	case 3:
-		data_byte_num = BYTE_NUM_3;
-		break;
-	case 4:
-		data_byte_num = BYTE_NUM_4;
-		break;
-	default:
-		break;
+		case 1:
+			data_byte_num = BYTE_NUM_1;
+			break;
+		case 2:
+			data_byte_num = BYTE_NUM_2;
+			break;
+		case 3:
+			data_byte_num = BYTE_NUM_3;
+			break;
+		case 4:
+			data_byte_num = BYTE_NUM_4;
+			break;
+		default:
+			break;
 	}
 
 	if (data_len) {
 		CREATE_CMD_(cmd_desc[0], cmd[0], cmd_byte_num, CMD_MODE_WRITE,
-			    bitmode);
+				bitmode);
 		CREATE_CMD_(cmd_desc[1], cmd_data, data_byte_num,
-			    CMD_MODE_WRITE, bitmode);
+				CMD_MODE_WRITE, bitmode);
 		cmd_length = 2;
 	} else {
 		CREATE_CMD_(cmd_desc[0], cmd[0], cmd_byte_num, CMD_MODE_WRITE,
-			    bitmode);
+				bitmode);
 		cmd_length = 1;
 	}
 	spiflash_read_write(cmd_desc, cmd_length, NULL);
 }
 
 int spiflash_cmd_poll_bit(struct spi_flash *flash, unsigned long timeout,
-			  u8_t cmd, u32_t poll_bit, u32_t bit_value)
+		u8_t cmd, u32_t poll_bit, u32_t bit_value)
 {
 	u32_t status = 0;
 
@@ -516,7 +754,7 @@ int spiflash_cmd_poll_bit(struct spi_flash *flash, unsigned long timeout,
 int spiflash_cmd_wait_ready(struct spi_flash *flash, unsigned long timeout)
 {
 	return spiflash_cmd_poll_bit(flash, timeout, CMD_READ_STATUS1,
-				     STATUS_WIP, 0);
+			STATUS_WIP, 0);
 }
 
 int spiflash_cmd_erase(struct spi_flash *flash, u8_t erase_cmd, u32_t offset)
@@ -545,26 +783,26 @@ int spiflash_cmd_erase(struct spi_flash *flash, u8_t erase_cmd, u32_t offset)
 	addr_byte_num = spi_flash_addr(&addr, flash->support_4addr);
 
 	CREATE_CMD_(cmd_desc[0], erase_cmd, BYTE_NUM_1, CMD_MODE_WRITE,
-		    bitmode);
+			bitmode);
 	CREATE_CMD_(cmd_desc[1], addr, addr_byte_num, CMD_MODE_WRITE, bitmode);
 	spiflash_read_write(cmd_desc, 2, NULL);
 
 	ret = spiflash_cmd_wait_ready(flash, SPI_FLASH_CHIP_ERASE_TIMEOUT);
 	if (ret)
 		goto out;
-      out:
+out:
 	return ret;
 
 }
 
 static int
-    __attribute__ ((optimize("-O0"))) spiflash_write_page_sec(struct spi_flash
-							      *flash,
-							      SFC_CMD_DES_T *
-							      cmd_des_ptr,
-							      u32_t cmd_len,
-							      const void *data,
-							      u32_t data_len)
+__attribute__ ((optimize("-O0"))) spiflash_write_page_sec(struct spi_flash
+		*flash,
+		SFC_CMD_DES_T *
+		cmd_des_ptr,
+		u32_t cmd_len,
+		const void *data,
+		u32_t data_len)
 {
 	u32_t i, j, k;
 	u32_t piece_bytes_max = (10 - 2) * 4;
@@ -620,17 +858,17 @@ static int
 
 		dest_addr = addr;
 		CREATE_CMD_(cmd_desc[buffer_cnt], cmd_write, BYTE_NUM_1,
-			    CMD_MODE_WRITE, bitmode_cmd);
+				CMD_MODE_WRITE, bitmode_cmd);
 		buffer_cnt++;
 		CREATE_CMD_(cmd_desc[buffer_cnt], dest_addr, addr_byte_num,
-			    CMD_MODE_WRITE, bitmode_addr);
+				CMD_MODE_WRITE, bitmode_addr);
 		buffer_cnt++;
 
 		if (0 == (piece_cnt % (0x10))) {
 			for (j = 0; j < piece_cnt;) {
 				CREATE_CMD_(cmd_desc[buffer_cnt], *data_ptr32,
-					    BYTE_NUM_4, CMD_MODE_WRITE,
-					    bitmode_data);
+						BYTE_NUM_4, CMD_MODE_WRITE,
+						bitmode_data);
 				buffer_cnt++;
 				data_ptr32++;
 				j = j + 4;
@@ -641,8 +879,8 @@ static int
 
 			for (j = 0, k = 0;;) {
 				CREATE_CMD_(cmd_desc[buffer_cnt], data_tmp[k],
-					    BYTE_NUM_4, CMD_MODE_WRITE,
-					    bitmode_data);
+						BYTE_NUM_4, CMD_MODE_WRITE,
+						bitmode_data);
 				buffer_cnt++;
 				k++;
 				j = j + 4;
@@ -662,8 +900,8 @@ static int
 }
 
 static int spiflash_write_page(struct spi_flash *flash,
-			       SFC_CMD_DES_T * cmd_des_ptr, u32_t cmd_len,
-			       const void *data, u32_t data_len)
+		SFC_CMD_DES_T * cmd_des_ptr, u32_t cmd_len,
+		const void *data, u32_t data_len)
 {
 	u32_t i, j;
 	u32_t piece_bytes_max = (12 - 2) * 4;
@@ -717,43 +955,43 @@ static int spiflash_write_page(struct spi_flash *flash,
 		spiflash_write_enable(flash);
 		dest_addr = addr;
 		addr_byte_num =
-		    spi_flash_addr(&dest_addr, flash->support_4addr);
+			spi_flash_addr(&dest_addr, flash->support_4addr);
 
 		CREATE_CMD_(cmd_desc[buffer_cnt], cmd_write, BYTE_NUM_1,
-			    CMD_MODE_WRITE, bitmode_cmd);
+				CMD_MODE_WRITE, bitmode_cmd);
 		buffer_cnt++;
 		CREATE_CMD_(cmd_desc[buffer_cnt], dest_addr, addr_byte_num,
-			    CMD_MODE_WRITE, bitmode_addr);
+				CMD_MODE_WRITE, bitmode_addr);
 		buffer_cnt++;
 
 		for (j = 0; j < piece_cnt;) {
 			if ((piece_cnt - j) >= 4) {
 				CREATE_CMD_(cmd_desc[buffer_cnt], *data_ptr32,
-					    BYTE_NUM_4, CMD_MODE_WRITE,
-					    bitmode_data);
+						BYTE_NUM_4, CMD_MODE_WRITE,
+						bitmode_data);
 				buffer_cnt++;
 				data_ptr32++;
 				j = j + 4;
 			} else if (((piece_cnt - j) < 4)
-				   && ((piece_cnt - j) % 4)) {
+					&& ((piece_cnt - j) % 4)) {
 				u32_t tail_bytes = piece_cnt - j, byte_number =
-				    BYTE_NUM_1;
+					BYTE_NUM_1;
 				switch (tail_bytes) {
-				case 1:
-					byte_number = BYTE_NUM_1;
-					break;
-				case 2:
-					byte_number = BYTE_NUM_2;
-					break;
-				case 3:
-					byte_number = BYTE_NUM_3;
-					break;
-				default:
-					break;
+					case 1:
+						byte_number = BYTE_NUM_1;
+						break;
+					case 2:
+						byte_number = BYTE_NUM_2;
+						break;
+					case 3:
+						byte_number = BYTE_NUM_3;
+						break;
+					default:
+						break;
 				}
 				CREATE_CMD_(cmd_desc[buffer_cnt], *data_ptr32,
-					    byte_number, CMD_MODE_WRITE,
-					    bitmode_data);
+						byte_number, CMD_MODE_WRITE,
+						bitmode_data);
 				buffer_cnt++;
 
 				j = piece_cnt;
@@ -771,11 +1009,11 @@ static int spiflash_write_page(struct spi_flash *flash,
 }
 
 int __attribute__ ((optimize("-O0"))) spiflash_cmd_program_sec(struct spi_flash
-							       *flash,
-							       u32_t offset,
-							       u32_t len,
-							       const void *buf,
-							       u8_t cmd)
+		*flash,
+		u32_t offset,
+		u32_t len,
+		const void *buf,
+		u8_t cmd)
 {
 	unsigned long page_addr, page_size;
 	unsigned int byte_addr;
@@ -810,14 +1048,14 @@ int __attribute__ ((optimize("-O0"))) spiflash_cmd_program_sec(struct spi_flash
 			bitmode = BIT_MODE_4;
 		}
 		CREATE_CMD_(cmd_desc[0], cmd, BYTE_NUM_1, CMD_MODE_WRITE,
-			    bitmode);
+				bitmode);
 		CREATE_CMD_(cmd_desc[1],
-			    (u32_t) (page_addr * page_size + byte_addr),
-			    BYTE_NUM_4, CMD_MODE_WRITE, bitmode);
+				(u32_t) (page_addr * page_size + byte_addr),
+				BYTE_NUM_4, CMD_MODE_WRITE, bitmode);
 
 		ret =
-		    spiflash_write_page_sec(flash, cmd_desc, 2,
-					    ((char *)buf + actual), chunk_len);
+			spiflash_write_page_sec(flash, cmd_desc, 2,
+					((char *)buf + actual), chunk_len);
 		if (ret < 0) {
 			LOGI("SF: write failed\n");
 			break;
@@ -830,7 +1068,7 @@ int __attribute__ ((optimize("-O0"))) spiflash_cmd_program_sec(struct spi_flash
 }
 
 int spiflash_cmd_program(struct spi_flash *flash, u32_t offset,
-			 u32_t len, const void *buf, u8_t cmd)
+		u32_t len, const void *buf, u8_t cmd)
 {
 	unsigned long page_addr, page_size;
 	unsigned int byte_addr;
@@ -864,13 +1102,13 @@ int spiflash_cmd_program(struct spi_flash *flash, u32_t offset,
 			bitmode = BIT_MODE_4;
 		}
 		CREATE_CMD_(cmd_desc[0], cmd, BYTE_NUM_1, CMD_MODE_WRITE,
-			    bitmode);
+				bitmode);
 		CREATE_CMD_(cmd_desc[1],
-			    (u32_t) (page_addr * page_size + byte_addr),
-			    BYTE_NUM_4, CMD_MODE_WRITE, bitmode);
+				(u32_t) (page_addr * page_size + byte_addr),
+				BYTE_NUM_4, CMD_MODE_WRITE, bitmode);
 
 		ret =
-		    spiflash_write_page(flash, cmd_desc, 2,
+			spiflash_write_page(flash, cmd_desc, 2,
 					((char *)buf + actual), chunk_len);
 		if (ret < 0) {
 			LOGI("SF: write failed\n");
@@ -889,7 +1127,7 @@ int spiflash_write_enable(struct spi_flash *flash)
 	u32_t timeout = SPI_FLASH_WEL_TIMEOUT;
 
 	return spiflash_cmd_poll_bit(flash, timeout, CMD_READ_STATUS1,
-				     STATUS_WEL, 1);
+			STATUS_WEL, 1);
 #else
 	u8_t cmd = CMD_WRITE_ENABLE;
 
@@ -910,7 +1148,7 @@ int spiflash_write_disable(struct spi_flash *flash)
 	}
 
 	CREATE_CMD_(cmd_desc[0], CMD_WRITE_DISABLE, BYTE_NUM_1, CMD_MODE_WRITE,
-		    bitmode);
+			bitmode);
 	spiflash_read_write(cmd_desc, 1, NULL);
 
 	return 0;
@@ -965,7 +1203,7 @@ int spiflash_reset_anyway(void)
 
 	bitmode = BIT_MODE_4;
 	CREATE_CMD_(cmd_desc[0], CMD_RSTEN, BYTE_NUM_1, CMD_MODE_WRITE,
-		    bitmode);
+			bitmode);
 	spiflash_read_write(cmd_desc, 1, NULL);
 	CREATE_CMD_(cmd_desc[0], CMD_RST, BYTE_NUM_1, CMD_MODE_WRITE, bitmode);
 	spiflash_read_write(cmd_desc, 1, NULL);
@@ -973,7 +1211,7 @@ int spiflash_reset_anyway(void)
 
 	bitmode = BIT_MODE_1;
 	CREATE_CMD_(cmd_desc[0], CMD_RSTEN, BYTE_NUM_1, CMD_MODE_WRITE,
-		    bitmode);
+			bitmode);
 	spiflash_read_write(cmd_desc, 1, NULL);
 	CREATE_CMD_(cmd_desc[0], CMD_RST, BYTE_NUM_1, CMD_MODE_WRITE, bitmode);
 	spiflash_read_write(cmd_desc, 1, NULL);
@@ -983,14 +1221,14 @@ int spiflash_reset_anyway(void)
 }
 
 int spiflash_write_sec(struct spi_flash *flash, u32_t offset,
-		       u32_t len, const void *buf)
+		u32_t len, const void *buf)
 {
 	return spiflash_cmd_program_sec(flash, offset, len, buf,
-					CMD_PAGE_PROGRAM);
+			CMD_PAGE_PROGRAM);
 }
 
 int spiflash_write(struct spi_flash *flash, u32_t offset,
-		   u32_t len, const void *buf)
+		u32_t len, const void *buf)
 {
 	return spiflash_cmd_program(flash, offset, len, buf, CMD_PAGE_PROGRAM);
 }
@@ -1042,45 +1280,45 @@ u32_t spiflash_read_common(struct spi_flash * flash, u32_t offset)
 }
 
 int spiflash_read_data_xip(struct spi_flash *flash, u32_t offset,
-			   u32_t * buf, u32_t dump_byte, READ_CMD_TYPE_E type)
+		u32_t * buf, u32_t dump_byte, READ_CMD_TYPE_E type)
 {
 	u8_t cmd;
 
 	switch (type) {
-	case READ_SPI:
-		if (SPI_MODE != flash->work_mode)
+		case READ_SPI:
+			if (SPI_MODE != flash->work_mode)
+				return FALSE;
+			cmd = CMD_NORMAL_READ;
+			flash->spi_rw_mode = RD_CMD_1BIT | RD_ADDR_1BIT | RD_DATA_1BIT;
+			break;
+		case READ_SPI_FAST:
+			if (SPI_MODE != flash->work_mode)
+				return FALSE;
+			cmd = CMD_FAST_READ;
+			flash->spi_rw_mode =
+				RD_CMD_1BIT | RD_ADDR_1BIT | RD_DUMY_1BIT | RD_DATA_1BIT;
+			break;
+		case READ_SPI_2IO:
+			if (SPI_MODE != flash->work_mode)
+				return FALSE;
+			cmd = CMD_2IO_READ;
+			flash->spi_rw_mode =
+				RD_CMD_1BIT | RD_ADDR_2BIT | RD_DUMY_2BIT | RD_DATA_2BIT;
+			break;
+		case READ_SPI_4IO:
+			if (SPI_MODE != flash->work_mode)
+				return FALSE;
+			cmd = CMD_4IO_READ;
+			flash->spi_rw_mode =
+				RD_CMD_1BIT | RD_ADDR_4BIT | RD_DUMY_4BIT | RD_DATA_4BIT;
+			break;
+		case READ_QPI_4IO:
+			if (QPI_MODE != flash->work_mode)
+				return FALSE;
+			cmd = CMD_4IO_READ;
+			break;
+		default:
 			return FALSE;
-		cmd = CMD_NORMAL_READ;
-		flash->spi_rw_mode = RD_CMD_1BIT | RD_ADDR_1BIT | RD_DATA_1BIT;
-		break;
-	case READ_SPI_FAST:
-		if (SPI_MODE != flash->work_mode)
-			return FALSE;
-		cmd = CMD_FAST_READ;
-		flash->spi_rw_mode =
-		    RD_CMD_1BIT | RD_ADDR_1BIT | RD_DUMY_1BIT | RD_DATA_1BIT;
-		break;
-	case READ_SPI_2IO:
-		if (SPI_MODE != flash->work_mode)
-			return FALSE;
-		cmd = CMD_2IO_READ;
-		flash->spi_rw_mode =
-		    RD_CMD_1BIT | RD_ADDR_2BIT | RD_DUMY_2BIT | RD_DATA_2BIT;
-		break;
-	case READ_SPI_4IO:
-		if (SPI_MODE != flash->work_mode)
-			return FALSE;
-		cmd = CMD_4IO_READ;
-		flash->spi_rw_mode =
-		    RD_CMD_1BIT | RD_ADDR_4BIT | RD_DUMY_4BIT | RD_DATA_4BIT;
-		break;
-	case READ_QPI_4IO:
-		if (QPI_MODE != flash->work_mode)
-			return FALSE;
-		cmd = CMD_4IO_READ;
-		break;
-	default:
-		return FALSE;
 	}
 
 	spiflash_set_xip_cmd(flash, cmd, dump_byte);
@@ -1090,7 +1328,7 @@ int spiflash_read_data_xip(struct spi_flash *flash, u32_t offset,
 }
 
 int spiflash_read_data_noxip(struct spi_flash *flash, u32_t address,
-			     u8_t * buf, u32_t buf_size, READ_CMD_TYPE_E type)
+		u32_t * buf, u32_t buf_size, READ_CMD_TYPE_E type)
 {
 	u8_t cmd[1] = { 0 };
 	u32_t pbuf_size = 0;
@@ -1098,43 +1336,43 @@ int spiflash_read_data_noxip(struct spi_flash *flash, u32_t address,
 	u32_t block_size = 8;
 
 	switch (type) {
-	case READ_SPI:
-		if (SPI_MODE != flash->work_mode)
+		case READ_SPI:
+			if (SPI_MODE != flash->work_mode)
+				return FALSE;
+			cmd[0] = CMD_NORMAL_READ;
+			flash->spi_rw_mode = RD_CMD_1BIT | RD_ADDR_1BIT | RD_DATA_1BIT;
+			break;
+		case READ_SPI_FAST:
+			if (SPI_MODE != flash->work_mode)
+				return FALSE;
+			cmd[0] = CMD_FAST_READ;
+			flash->spi_rw_mode =
+				RD_CMD_1BIT | RD_ADDR_1BIT | RD_DUMY_1BIT | RD_DATA_1BIT;
+			break;
+		case READ_SPI_2IO:
+			if (SPI_MODE != flash->work_mode)
+				return FALSE;
+			cmd[0] = CMD_2IO_READ;
+			flash->spi_rw_mode =
+				RD_CMD_1BIT | RD_ADDR_2BIT | RD_DUMY_2BIT | RD_DATA_2BIT;
+			break;
+		case READ_SPI_4IO:
+			if (SPI_MODE != flash->work_mode)
+				return FALSE;
+			cmd[0] = CMD_4IO_READ;
+			flash->spi_rw_mode =
+				RD_CMD_1BIT | RD_ADDR_4BIT | RD_DUMY_4BIT | RD_DATA_4BIT;
+			break;
+		case READ_QPI_4IO:
+			if (QPI_MODE != flash->work_mode)
+				return FALSE;
+			cmd[0] = CMD_4IO_READ;
+			break;
+		default:
 			return FALSE;
-		cmd[0] = CMD_NORMAL_READ;
-		flash->spi_rw_mode = RD_CMD_1BIT | RD_ADDR_1BIT | RD_DATA_1BIT;
-		break;
-	case READ_SPI_FAST:
-		if (SPI_MODE != flash->work_mode)
-			return FALSE;
-		cmd[0] = CMD_FAST_READ;
-		flash->spi_rw_mode =
-		    RD_CMD_1BIT | RD_ADDR_1BIT | RD_DUMY_1BIT | RD_DATA_1BIT;
-		break;
-	case READ_SPI_2IO:
-		if (SPI_MODE != flash->work_mode)
-			return FALSE;
-		cmd[0] = CMD_2IO_READ;
-		flash->spi_rw_mode =
-		    RD_CMD_1BIT | RD_ADDR_2BIT | RD_DUMY_2BIT | RD_DATA_2BIT;
-		break;
-	case READ_SPI_4IO:
-		if (SPI_MODE != flash->work_mode)
-			return FALSE;
-		cmd[0] = CMD_4IO_READ;
-		flash->spi_rw_mode =
-		    RD_CMD_1BIT | RD_ADDR_4BIT | RD_DUMY_4BIT | RD_DATA_4BIT;
-		break;
-	case READ_QPI_4IO:
-		if (QPI_MODE != flash->work_mode)
-			return FALSE;
-		cmd[0] = CMD_4IO_READ;
-		break;
-	default:
-		return FALSE;
 	}
 
-	pbuf = buf;
+	pbuf = (u8_t *)buf;
 	pbuf_size = buf_size;
 	while (pbuf_size > block_size) {
 		spiflash_cmd_read(flash, cmd, 1, address, pbuf, block_size);
@@ -1186,17 +1424,17 @@ static int spiflash_enter_qpi(struct spi_flash *flash)
 	flash->work_mode = QPI_MODE;
 
 	switch (dummy_clocks) {
-	case DUMMY_2CLOCKS:
-		para = DUMMYCLK_2_FREQ_50MHZ;
-		break;
-	case DUMMY_4CLOCKS:
-		para = DUMMYCLK_4_FREQ_80MHZ;
-		break;
-	case DUMMY_6CLOCKS:
-		para = DUMMYCLK_6_FREQ_104MHZ;
-		break;
-	default:
-		break;
+		case DUMMY_2CLOCKS:
+			para = DUMMYCLK_2_FREQ_50MHZ;
+			break;
+		case DUMMY_4CLOCKS:
+			para = DUMMYCLK_4_FREQ_80MHZ;
+			break;
+		case DUMMY_6CLOCKS:
+			para = DUMMYCLK_6_FREQ_104MHZ;
+			break;
+		default:
+			break;
 	}
 
 	cmd = CMD_SETBURST;
@@ -1243,10 +1481,10 @@ int sprd_spi_flash_init(struct spi_flash *flash,
 	flash->page_size = p->page_size;
 	flash->sector_size = p->page_size * p->sector_size;
 	flash->size = p->page_size * p->sector_size
-	    * p->nr_sectors * p->nr_blocks;
+		* p->nr_sectors * p->nr_blocks;
 
 	LOGI("SF: Detected %s with page size %u, total ",
-	     p->name, p->page_size);
+			p->name, p->page_size);
 	LOGI("flash size is 0x%x\n", flash->size);
 
 	*params = p;

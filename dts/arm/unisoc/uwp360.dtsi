@@ -4,6 +4,7 @@
 
 #define INT_UART0	36          // UART0 Rx and Tx
 #define INT_UART1	35          // UART1 Rx and Tx
+#define INT_UART2	7           // UART2 Rx and Tx (Connect EIC0(7))
 
 / {
 	cpus {
@@ -44,6 +45,13 @@
 			label = "UART_1";
 		};
 
+		uart2: uart@40838000 {
+			compatible = "unisoc,uart";
+			reg = <DT_UART2_START DT_UART_SIZE>;
+			interrupts = <INT_UART2 3>;
+			status = "disabled";
+			label = "UART_2";
+		};
 	};
 };
 

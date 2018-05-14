@@ -9,6 +9,7 @@
 	aliases {
 		uart_0 = &uart0;
 		uart_1 = &uart1;
+		uart_2 = &uart2;
 	};
 
 	chosen {
@@ -19,6 +20,12 @@
 };
 
 &uart1 {
+	status = "ok";
+	current-speed = <115200>;
+	clock-frequency = <26000000>;
+};
+
+&uart2 {
 	status = "ok";
 	current-speed = <115200>;
 	clock-frequency = <26000000>;

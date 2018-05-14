@@ -15,7 +15,7 @@
 #include "uwp360_hal.h"
 
 #define DEV_CFG(dev) \
-	((const struct flash_uwp360_config * const)(dev)->config->config_info)
+	((struct flash_uwp360_config *)(dev)->config->config_info)
 #define DEV_DATA(dev) \
 	((struct flash_uwp360_data * const)(dev)->driver_data)
 
@@ -72,7 +72,6 @@ static int flash_uwp360_read(struct device *dev, off_t offset, void *data,
 			    size_t len)
 {
 	int ret;
-	u8_t *buf = data;
 	struct flash_uwp360_config *cfg = DEV_CFG(dev);
 	struct spi_flash *flash = &(cfg->flash);
 
@@ -113,7 +112,6 @@ static int flash_uwp360_write(struct device *dev, off_t offset,
 			     const void *data, size_t len)
 {
 	int ret;
-	u8_t *buf = data;
 	struct flash_uwp360_config *cfg = DEV_CFG(dev);
 	struct spi_flash *flash = &(cfg->flash);
 
@@ -136,7 +134,7 @@ static const struct flash_driver_api flash_uwp360_api = {
 	.write = flash_uwp360_write,
 	.read = flash_uwp360_read,
 #ifdef CONFIG_FLASH_PAGE_LAYOUT
-	.page_layout = flash_uwp360_page_layout,
+//	.page_layout = flash_uwp360_page_layout,
 #endif
 #ifdef FLASH_WRITE_BLOCK_SIZE
 	.write_block_size = FLASH_WRITE_BLOCK_SIZE,
@@ -149,14 +147,14 @@ static const struct flash_driver_api flash_uwp360_api = {
 
 static int uwp360_flash_init(struct device *dev)
 {
-	int ret;
+	int ret = 0;
 
+#if 0
 	struct flash_uwp360_config *cfg = DEV_CFG(dev);
 	struct spi_flash *flash = &(cfg->flash);
 
 	k_sem_init(&cfg->sem, 1, 1);
 
-#if 0
 	ret = sprd_spi_flash_init(flash, &(cfg->params));
 	if(!ret) {
 		printk("sprd spi flash init failed.\n");
@@ -164,7 +162,7 @@ static int uwp360_flash_init(struct device *dev)
 	}
 #endif
 
-	return 0;
+	return ret;
 }
 
 DEVICE_AND_API_INIT(uwp360_flash, CONFIG_FLASH_UWP360_NAME,

@@ -98,14 +98,14 @@ static const struct wdt_driver_api wdg_uwp360_api = {
 
 static int wdg_uwp360_init(struct device *dev)
 {
-	uwp360_sys_enable(BIT(APB_WDG) | BIT(9) | BIT(10));
+	uwp360_sys_enable(BIT(APB_EB_WDG) | BIT(APB_EB_WDG_RTC) | BIT(APB_EB_SYST_RTC));
 
-	uwp360_sys_reset(BIT(APB_WDG));
+	uwp360_sys_reset(BIT(APB_EB_WDG));
 
-	IRQ_CONNECT(INT_WDG, 5,
+	IRQ_CONNECT(NVIC_INT_WDG, 5,
 			wdg_uwp360_isr,
 			DEVICE_GET(wdg_uwp360), 0);
-	irq_enable(INT_WDG);
+	irq_enable(NVIC_INT_WDG);
 	return 0;
 }
 

@@ -13,7 +13,7 @@ extern "C" {
 
 #include "uwp360_hal.h"
 
-#define CTL_APB_BASE		CTL_GLBREG_BASE
+#define CTL_APB_BASE			BASE_GLB
 
 #define REG_APB_RST				(CTL_APB_BASE + 0x0)
 #define REG_MCU_SOFT_RST		(CTL_APB_BASE + 0x4)
@@ -31,44 +31,41 @@ extern "C" {
 #define REG_WIFI_SYS0			(CTL_APB_BASE + 0x70)
 #define REG_WIFI_SYS1			(CTL_APB_BASE + 0x74)
 
-#define REG_AON_GLB_EB			(CTL_AON_GLB_BASE + 0x24)
-
-
 #define APB_MCU_SOFT_RST	0
 #define APB_PWR_ON_RST		0
 #define APB_SYS_SOFT_RST	0
 
 	enum {
-		APB_TMR3_RTC = 0,
-		APB_TMR4_RTC,
-		APB_UART0,
-		APB_UART1,
-		APB_SYST,
-		APB_TMR0,
-		APB_TMR1,
-		APB_WDG,
-		APB_DJTAG,
-		APB_WDG_RTC,
-		APB_SYST_RTC,
-		APB_TMR0_RTC,
-		APB_TMR1_RTC,
-		APB_BT_RTC,
-		APB_EIC,
-		APB_EIC_RTCDV5,
+		APB_EB_TMR3_RTC = 0,
+		APB_EB_TMR4_RTC,
+		APB_EB_UART0,
+		APB_EB_UART1,
+		APB_EB_SYST,
+		APB_EB_TMR0,
+		APB_EB_TMR1,
+		APB_EB_WDG,
+		APB_EB_DJTAG,
+		APB_EB_WDG_RTC,
+		APB_EB_SYST_RTC,
+		APB_EB_TMR0_RTC,
+		APB_EB_TMR1_RTC,
+		APB_EB_BT_RTC,
+		APB_EB_EIC,
+		APB_EB_EIC_RTC,
 		
-		APB_IIS,
-		APB_INTC,
-		APB_PIN,
-		APB_FM,
-		APB_EFUSE,
-		APB_TMR2,
-		APB_TMR3,
-		APB_TMR4,
-		APB_GPIO,
-		APB_COM_TMR_ = 30,
-		APB_WCI2,
+		APB_EB_IIS = 16,
+		APB_EB_INTC,
+		APB_EB_PIN,
+		APB_EB_FM,
+		APB_EB_EFUSE,
+		APB_EB_TMR2,
+		APB_EB_TMR3,
+		APB_EB_TMR4,
+		APB_EB_GPIO,
+		APB_EB_IPI,
+		APB_EB_COM_TMR_ = 30,
+		APB_EB_WCI2,
 	};
-#define AON_EB_GPIO	12
 
 	struct uwp360_sys {
 		u32_t rst;
@@ -93,17 +90,6 @@ extern "C" {
 		sci_glb_set(REG_APB_RST, bits);
 		while(wait--){}
 		sci_glb_clr(REG_APB_RST, bits);
-	}
-
-	static inline void uwp360_aon_enable(u32_t bits) {
-		sci_glb_set(REG_AON_GLB_EB, bits);
-	}
-
-	static inline void uwp360_aon_disable(u32_t bits) {
-		sci_glb_clr(REG_AON_GLB_EB, bits);
-	}
-
-	static inline void uwp360_aon_reset(u32_t bits) {
 	}
 
 #ifdef __cplusplus

@@ -49,6 +49,22 @@ extern "C" {
 		gpio->mask &= (~pin_map);
 	}
 
+	static inline void uwp360_gpio_input_enable(u32_t base,
+			u32_t pin_map)
+	{
+		volatile struct uwp360_gpio *gpio = UWP360_GPIO(base);
+
+		gpio->inen |= pin_map;
+	}
+
+	static inline void uwp360_gpio_input_disable(u32_t base,
+			u32_t pin_map)
+	{
+		volatile struct uwp360_gpio *gpio = UWP360_GPIO(base);
+
+		gpio->inen &= (~pin_map);
+	}
+
 	static inline void uwp360_gpio_write(u32_t base,
 			u32_t pin_map, u32_t pin_value)
 	{
@@ -65,7 +81,7 @@ extern "C" {
 	{
 		volatile struct uwp360_gpio *gpio = UWP360_GPIO(base);
 
-		return gpio->data & pin;
+		return ~(gpio->data & pin);
 	}
 
 	static inline void uwp360_gpio_set_dir(u32_t base,

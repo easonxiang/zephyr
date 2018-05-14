@@ -237,13 +237,13 @@ extern "C" {
 
 	};
 
-#define DUMMYCLK_2_FREQ_50MHZ			(0x0)
-#define DUMMYCLK_4_FREQ_80MHZ			(0x10)
+#define DUMMYCLK_2_FREQ_50MHZ		(0x0)
+#define DUMMYCLK_4_FREQ_80MHZ		(0x10)
 #define DUMMYCLK_6_FREQ_104MHZ		(0x20)
 #define DUMMYCLK_8_FREQ_104MHZ		(0x30)
 
-#define GIGA_MFID						0XC8
-#define WINBOND_MFID					0XEF
+#define GIGA_MFID					0XC8
+#define WINBOND_MFID				0XEF
 
 #define GIGA_ID_25LQ16					0x6015
 #define GIGA_ID_25LQ32B					0X6016
@@ -251,93 +251,6 @@ extern "C" {
 #define GIGA_ID_25LQ128					0X6018
 #define GIGA_ID_25Q64B					0X4017
 #define GIGA_ID_25Q32B					0X4016
-
-	static struct spi_flash_params giga_flash_table[] = {
-		{
-			GIGA_ID_25LQ16,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.pages_per_sector = 
-			16,			//.nr_sectors = 
-			32,			//.nr_blocks = 
-			QPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_2CLOCKS,		//.dummy_clocks = 
-			"25LQ16",		//.name = 
-		},
-		{
-			GIGA_ID_25LQ32B,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.pages_per_sector = 
-			16,			//.nr_sectors = 
-			64,			//.nr_blocks = 
-			QPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_2CLOCKS,		//.dummy_clocks = 
-			"25LQ32B",		//.name = 
-		},
-		{
-			GIGA_ID_25LQ64B,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.pages_per_sector = 
-			16,			//.nr_sectors = 
-			128,			//.nr_blocks = 
-			QPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_2CLOCKS,		//.dummy_clocks = 
-			"25LQ64B",		//.name = 
-		},
-		{
-			GIGA_ID_25LQ128,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.pages_per_sector = 
-			16,			//.nr_sectors = 
-			256,			//.nr_blocks = 
-			QPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_2CLOCKS,		//.dummy_clocks = 
-			"25LQ128",		//.name = 
-		},
-		{
-			GIGA_ID_25Q64B,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.pages_per_sector = 
-			16,			//.nr_sectors = 
-			128,			//.nr_blocks = 
-			SPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_2CLOCKS,		//.dummy_clocks = 
-			"25Q64B",		//.name = 
-		},
-		{
-			GIGA_ID_25Q32B,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.pages_per_sector = 
-			16,			//.nr_sectors = 
-			64,			//.nr_blocks = 
-			SPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_2CLOCKS,		//.dummy_clocks = 
-			"25Q32B",		//.name = 
-		},
-		{
-			GIGA_ID_25Q32B,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.pages_per_sector = 
-			16,			//.nr_sectors = 
-			64,			//.nr_blocks = 
-			SPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_2CLOCKS,		//.dummy_clocks = 
-			"25Q32B",		//.name = 
-		},
-	};
 
 #define WINBOND_ID_W25X16			0x3015
 #define WINBOND_ID_W25X32			0x3016
@@ -350,154 +263,6 @@ extern "C" {
 #define WINBOND_ID_W25Q64FV		0x4017
 #define WINBOND_ID_W25Q128FV		0x4018
 #define WINBOND_ID_W25Q256FV		0x4019
-
-	static struct spi_flash_params winbond_flash_table[] = {
-		{
-			WINBOND_ID_W25X16,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.sector_size = 
-			16,			//.nr_sectors = 
-			32,			//.nr_blocks = 
-			QPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_4CLOCKS,		//.dummy_clocks = 
-			"W25X16",		//.name = 
-		},
-		{
-			WINBOND_ID_W25X32,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.pages_per_sector = 
-			16,			//.nr_sectors = 
-			64,			//.nr_blocks = 
-			QPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_4CLOCKS,		//.dummy_clocks = 
-			"W25X32",		//.name = 
-		},
-		{
-			WINBOND_ID_W25X64,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.pages_per_sector = 
-			16,			//.nr_sectors = 
-			128,			//.nr_blocks = 
-			QPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_4CLOCKS,		//.dummy_clocks = 
-			"W25X64",		//.name = 
-		},
-		{
-			WINBOND_ID_W25Q32DW,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.pages_per_sector = 
-			16,			//.nr_sectors = 
-			64,			//.nr_blocks = 
-			QPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_4CLOCKS,		//.dummy_clocks = 
-			"W25Q32DW",		//.name = 
-		},
-		{
-			WINBOND_ID_W25Q64FW,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.pages_per_sector = 
-			16,			//.nr_sectors = 
-			128,			//.nr_blocks = 
-			QPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_4CLOCKS,		//.dummy_clocks = 
-			"W25Q64FW",		//.name = 
-		},
-		{
-			WINBOND_ID_W25Q128FW,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.pages_per_sector = 
-			16,			//.nr_sectors = 
-			256,			//.nr_blocks = 
-			QPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_4CLOCKS,		//.dummy_clocks = 
-			"W25Q128FW",		//.name = 
-		},
-		{
-			WINBOND_ID_W25Q16,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.pages_per_sector = 
-			16,			//.nr_sectors = 
-			32,			//.nr_blocks = 
-			QPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_4CLOCKS,		//.dummy_clocks = 
-			"W25Q16",		//.name = 
-		},
-		{
-			WINBOND_ID_W25Q32FV,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.pages_per_sector = 
-			16,			//.nr_sectors = 
-			64,			//.nr_blocks = 
-			QPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_4CLOCKS,		//.dummy_clocks = 
-			"W25Q32FV",		//.name = 
-		},
-		{
-			WINBOND_ID_W25Q64FV,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.pages_per_sector = 
-			16,			//.nr_sectors = 
-			128,			//.nr_blocks = 
-			QPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_4CLOCKS,		//.dummy_clocks = 
-			"W25Q64FV",		//.name = 
-		},
-		{
-			WINBOND_ID_W25Q128FV,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.pages_per_sector = 
-			16,			//.nr_sectors = 
-			256,			//.nr_blocks = 
-			QPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_4CLOCKS,		//.dummy_clocks = 
-			"W25Q128FV",		//.name = 
-		},
-		{
-			WINBOND_ID_W25Q256FV,	//.idcode1 = 
-			0,			//.idcode2 = 
-			256,			//.page_size = 
-			16,			//.pages_per_sector = 
-			16,			//.nr_sectors = 
-			512,			//.nr_blocks = 
-			QPI_MODE,		//.support_qpi = 
-			READ_FREQ_104M,	//.read_freq_max = 
-			DUMMY_4CLOCKS,		//.dummy_clocks = 
-			"W25Q256FV",		//.name = 
-		},
-	};
-
-	static struct spi_flash_spec_s spi_flash_spec_table[] = {
-		{
-			GIGA_MFID,
-			ARRAY_SIZE(giga_flash_table),
-			giga_flash_table,
-		},
-		{
-			WINBOND_MFID,
-			ARRAY_SIZE(winbond_flash_table),
-			winbond_flash_table,
-		},
-	};
 
 #ifdef __cplusplus
 }

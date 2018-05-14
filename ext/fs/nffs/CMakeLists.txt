@@ -1,3 +1,7 @@
+zephyr_include_directories(
+		include
+		)
+
 add_library(NFFS INTERFACE)
 
 target_include_directories(NFFS INTERFACE include)
