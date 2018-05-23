@@ -107,7 +107,6 @@ int cp_mcu_pull_reset(void)
 	sci_reg_or(0x4083c024, BIT(30) | BIT(31));
 	//check dap is ok ?
 	while ( sci_read32(0x408600fc) != 0x24770011 && i < 20){
-		k_sleep(2);
 		i++;
 	}
 	if (sci_read32(0x408600fc) != 0x24770011){
@@ -162,7 +161,6 @@ int cp_check_running(void)
 			printk("CP FW is running !!!\n");
 			return 0;
 		}
-		k_sleep(100);
 	}while(cnt-- > 0);
 
 	printk("CP FW running fail,Something must be wrong\n");
@@ -183,7 +181,6 @@ int cp_check_wifi_running(void)
 			while(1) ;
 			return 0;
 		}
-		k_sleep(100);
 	}while(cnt-- > 0);
 
 	printk("CP wifi running fail,Something must be wrong\n");
@@ -203,22 +200,18 @@ int cp_mcu_init(void)
 		printk("reset CP MCU fail\n");
 		return -1;
 	}
-	SYS_LOG_INF("aon eb: 0x%x.", sci_read32(REG_AON_GLB_EB));
 	ret = load_fw();
 	if (ret < 0 ){
 		printk("load fw fail\n");
 		return -1 ;
 	}
-	SYS_LOG_INF("aon eb: 0x%x.", sci_read32(REG_AON_GLB_EB));
 	cp_check_bit_clear();
-	SYS_LOG_INF("aon eb: 0x%x.", sci_read32(REG_AON_GLB_EB));
 	ret = cp_mcu_release_reset();//cp start to run
 	if (ret < 0){
 		printk("release reset fail\n");
 		return -1;
 	}
 
-	SYS_LOG_INF("aon eb: 0x%x.", sci_read32(REG_AON_GLB_EB));
 	ret = cp_check_running();
 	if (ret < 0){
 		printk("cp fw is not running,something must be wrong\n");

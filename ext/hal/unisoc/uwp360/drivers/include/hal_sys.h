@@ -31,6 +31,32 @@ extern "C" {
 #define REG_WIFI_SYS0			(CTL_APB_BASE + 0x70)
 #define REG_WIFI_SYS1			(CTL_APB_BASE + 0x74)
 
+#define REG_AHB_RST0			(BASE_AHB+0X0000)
+#define REG_AHB_EB0				(BASE_AHB+0X0004)
+
+#define REG_AHB_CM4_AHB_CTRL    (BASE_AHB+0X017C)
+#define REG_AHB_MTX_CTL1		(BASE_AHB+0x0114)
+
+#define BIT_AHB_WIFI_AXI_FORCE_EB           BIT(12)
+#define BIT_AHB_PCIE_EB                     BIT(11)
+#define BIT_AHB_DAP_EB                      BIT(1)
+#define BIT_AHB_WIFI_MAC_EB                 BIT(9)
+#define BIT_AHB_CACHE_CFG_EB                BIT(8)
+#define BIT_AHB_EDMA_EB                     BIT(7)
+#define BIT_AHB_SDIO_AXI_FORCE_EB           BIT(6)
+#define BIT_AHB_WIFI_EB                     BIT(5)
+#define BIT_AHB_BT_EB                       BIT(4)
+#define BIT_AHB_BUSMON1_EB                  BIT(3)
+#define BIT_AHB_BUSMON0_EN                  BIT(2)
+#define BIT_AHB_SDIO_EB                     BIT(1)
+#define BIT_AHB_DMA_EB                      BIT(0)
+
+#define BIT_AHB_BRG_BYPASS_ACK_CM4I         BIT(4)
+#define BIT_AHB_BRG_BYPASS_ACK_CM4D         BIT(3)
+#define BIT_AHB_BRG_BYPASS_ACK_CM4S         BIT(2)
+#define BIT_AHB_BRG_BYPASS_MODE             BIT(1)
+#define BIT_AHB_BRG_BYPASS_SWEN             BIT(0)
+
 #define APB_MCU_SOFT_RST	0
 #define APB_PWR_ON_RST		0
 #define APB_SYS_SOFT_RST	0

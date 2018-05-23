@@ -23,6 +23,7 @@ extern "C" {
 #define REG_AON_GLB_EB1			(BASE_AON_GLB + 0x28)
 #define REG_AON_MTX_CTRL		(BASE_AON_GLB + 0x2C)
 #define REG_AON_WDG_INT_EN		(BASE_AON_GLB + 0x30)
+#define REG_AON_PD_AT_RESET		(BASE_AON_GLB + 0x38)
 #define REG_AON_CLK_CTRL0		(BASE_AON_GLB + 0x40)
 #define REG_AON_CLK_CTRL1		(BASE_AON_GLB + 0x44)
 #define REG_AON_CLK_CTRL2		(BASE_AON_GLB + 0x48)
@@ -133,21 +134,20 @@ extern "C" {
 #define BIT_AON_APB_CGM_PCIE_AUX_AUTO_EN            BIT(1)
 #define BIT_AON_APB_CGM_PCIE_AUX_EN                 BIT(0)
 
-typedef enum _clk_arm_sel
-{
-	CLK_26M   = 0x20,
-	CLK_46M   = 0x10,
-	CLK_52M   = 0xe,
-	CLK_64M   = 0xa,
-	CLK_83M   = 0x8,
-	CLK_104M   = 0x6,
-	CLK_139M   = 0x4,
-	CLK_166M   = 0x3,
-	CLK_208M   = 0x2,
-	CLK_277M   = 0x1,
-	CLK_416M   = 0x0,
-} CLK_ARM_SEL_E;
-
+	typedef enum _clk_arm_sel
+	{
+		CLK_26M   = 0x20,
+		CLK_46M   = 0x10,
+		CLK_52M   = 0xe,
+		CLK_64M   = 0xa,
+		CLK_83M   = 0x8,
+		CLK_104M   = 0x6,
+		CLK_139M   = 0x4,
+		CLK_166M   = 0x3,
+		CLK_208M   = 0x2,
+		CLK_277M   = 0x1,
+		CLK_416M   = 0x0,
+	} CLK_ARM_SEL_E;
 
 	static inline void uwp360_aon_enable(u32_t bits) {
 		sci_glb_set(REG_AON_GLB_EB, bits);
@@ -165,14 +165,6 @@ typedef enum _clk_arm_sel
 		while(i--) ;
 
 		sci_glb_clr(REG_AON_RST, bits);
-	}
-
-	static inline void uwp360_aon_glb_init_clock(void) {
-		sci_glb_set(REG_AON_CLK_CTRL4, BIT_AON_APB_CGM_RTC_EN);
-		sci_glb_set(REG_AON_PLL_CTRL_CFG, CLK_416M & 0xFFFF);
-
-		sci_write32(REG_AON_CLK_RF_CGM_ARM_CFG,
-				BIT_AON_CLK_RF_CGM_ARM_SEL(CLK_SRC5));
 	}
 
 #ifdef __cplusplus

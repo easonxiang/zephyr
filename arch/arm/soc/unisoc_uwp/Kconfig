@@ -12,4 +12,4 @@ config SOC_FAMILY
 	default unisoc_uwp
 endif
 
-source "arch/arm/soc/unisoc_uwp/*/Kconfig.soc"
+source "arch/arm/soc/unisoc_uwp/uwp3/Kconfig.soc"

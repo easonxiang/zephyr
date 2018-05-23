@@ -18,6 +18,7 @@ extern "C" {
 #define REG_AON_CLK_RF_CGM_AHB_BT_CFG        (BASE_AON_CLK_RF +0x0028)
 #define REG_AON_CLK_RF_CGM_WIFI_MAC_APB_CFG  (BASE_AON_CLK_RF +0x002C)
 #define REG_AON_CLK_RF_CGM_SFC_2X_CFG        (BASE_AON_CLK_RF +0x0030)
+#define REG_AON_CLK_RF_CGM_SFC_1X_CFG		 (BASE_AON_CLK_RF +0x0034)
 #define REG_AON_CLK_RF_CGM_IIC_CFG           (BASE_AON_CLK_RF +0x006C)
 
 	/*------------------------------------------------------------------

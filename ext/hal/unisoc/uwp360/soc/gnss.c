@@ -601,7 +601,6 @@ void RF_setPGAGain(u32_t gain)
 void RF_Control(s16_t RF_Mode)
 {
     u32_t data_tmp;
-    u32_t gnss_pwron_finish_flag = 0;
 
     sci_reg_or(BIT_AON_APB_GNSS_RF_CTRL_GNSS_RF_CTRL_ADDR, BIT(1));
 
@@ -649,6 +648,7 @@ void RF_Control(s16_t RF_Mode)
     APB_GNSS_POWER_ON();
     DELAY(1);
 
+	u32_t gnss_pwron_finish_flag=0;
     while(!gnss_pwron_finish_flag)
     {
         gnss_pwron_finish_flag  = APB_GET_GNSS_POWERON_FINISH();

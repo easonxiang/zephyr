@@ -22,6 +22,7 @@ extern "C" {
 #define BASE_EIC0				0x40028000
 #define BASE_EIC1				0x40058000
 #define BASE_GLB				0x40088000
+#define BASE_AHB				0x40130000
 
 #define BASE_AON_INTC			0x40800000
 #define BASE_AON_GPIOP0			0x40804000
