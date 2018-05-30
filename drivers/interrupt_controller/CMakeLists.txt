@@ -1,6 +1,4 @@
-zephyr_include_directories(
-		.
-		)
+zephyr_include_directories(.)
 
 zephyr_sources_ifdef(CONFIG_ARCV2_INTERRUPT_UNIT    arcv2_irq_unit.c)
 zephyr_sources_ifdef(CONFIG_IOAPIC                  ioapic_intr.c)

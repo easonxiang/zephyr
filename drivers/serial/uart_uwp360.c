@@ -279,7 +279,7 @@ static const struct uart_driver_api uart_uwp360_driver_api = {
 DEVICE_AND_API_INIT(uart_uwp360_1, CONFIG_UART_UWP360_NAME,
 		    uart_uwp360_init, &uart_uwp360_dev_data_1,
 		    &uart_uwp360_dev_cfg_1,
-		    PRE_KERNEL_1, CONFIG_KERNEL_INIT_PRIORITY_DEVICE,
+		    PRE_KERNEL_1, 10,
 		    (void *)&uart_uwp360_driver_api);
 
 #ifdef CONFIG_UART_AON_UWP360

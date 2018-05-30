@@ -50,6 +50,7 @@ extern "C" {
 			return;
 		}
 
+		//sci_write32(REG_IPI_INT_CLR_COREN, 0xFFFFFFFF);
 		sci_write32(REG_IPI_INT_CLR_COREN, BIT((core << 2) + type));
 	}
 

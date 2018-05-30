@@ -1,0 +1,11 @@
+menuconfig WIFI_UWP360
+	bool "Unisoc uwp360 wifi driver support"
+	default y
+	select WIFI_OFFLOAD
+	select NET_L2_WIFI_MGMT
+
+if WIFI_UWP360
+config WIFI_UWP360_NAME
+	string "Driver name"
+	default "UWP360_WIFI"
+endif

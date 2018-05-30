@@ -1,10 +1,18 @@
-#ifndef __SBLOCK_H
-#define __SBLOCK_H
+/*
+ * Copyright (c) 2018, UNISOC Incorporated
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-#include <nuttx/config.h>
-#include <stdint.h>
-#include <nuttx/spinlock.h>
-#include <semaphore.h>
+#ifndef __HAL_SBLOCK_H
+#define __HAL_SBLOCK_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <zephyr.h>
+
 /* flag for CMD/DONE msg type */
 #define SMSG_CMD_SBLOCK_INIT		0x0001
 #define SMSG_DONE_SBLOCK_INIT		0x0002
@@ -21,6 +29,7 @@
 #define SBLOCK_BLK_STATE_PENDING 	1
 
 #define SBLOCK_SMEM_ADDR              0x00167000
+//#define SBLOCK_SMEM_ADDR        0x168a28 
 
 #define BLOCK_HEADROOM_SIZE     16
 
@@ -45,27 +54,27 @@
 #define BT_RX_BLOCK_NUM   5
 
 struct sblock_blks {
-	uint32_t		addr; /*phy address*/
-	uint32_t		length;
+	u32_t		addr; /*phy address*/
+	u32_t		length;
 };
 
 /* ring block header */
 struct sblock_ring_header {
 	/* get|send-block info */
-	uint32_t		txblk_addr;
-	uint32_t		txblk_count;
-	uint32_t		txblk_size;
-	uint32_t		txblk_blks;
-	uint32_t		txblk_rdptr;
-	uint32_t		txblk_wrptr;
+	u32_t		txblk_addr;
+	u32_t		txblk_count;
+	u32_t		txblk_size;
+	u32_t		txblk_blks;
+	u32_t		txblk_rdptr;
+	u32_t		txblk_wrptr;
 
 	/* release|recv-block info */
-	uint32_t		rxblk_addr;
-	uint32_t		rxblk_count;
-	uint32_t		rxblk_size;
-	uint32_t		rxblk_blks;
-	uint32_t		rxblk_rdptr;
-	uint32_t		rxblk_wrptr;
+	u32_t		rxblk_addr;
+	u32_t		rxblk_count;
+	u32_t		rxblk_size;
+	u32_t		rxblk_blks;
+	u32_t		rxblk_rdptr;
+	u32_t		rxblk_wrptr;
 };
 
 struct sblock_header {
@@ -74,6 +83,7 @@ struct sblock_header {
 };
 
 
+#define MAX_BLOCK_COUNT		(16)
 struct sblock_ring {
 	struct sblock_header	*header;
 	void			*txblk_virt; /* virt of header->txblk_addr */
@@ -84,35 +94,37 @@ struct sblock_ring {
 	struct sblock_blks 	*p_txblks;     /* virt of header->pool->txblk_blks */
 	struct sblock_blks 	*p_rxblks;     /* virt of header->pool->rxblk_blks */
 
-	int 			*txrecord; /* record the state of every txblk */
-	int 			*rxrecord; /* record the state of every rxblk */
+	int 			txrecord[MAX_BLOCK_COUNT]; /* record the state of every txblk */
+	int 			rxrecord[MAX_BLOCK_COUNT]; /* record the state of every rxblk */
     int             yell; /* need to notify cp */
 //	spinlock_t		r_txlock; /* send *///
 //	spinlock_t		r_rxlock; /* recv *//
 //	spinlock_t 		p_txlock; /* get */
 //	spinlock_t 		p_rxlock; /* release */
 
-	sem_t	getwait;
-	sem_t	recvwait;
+	struct k_sem	getwait;
+	struct k_sem	recvwait;
 };
 
 struct sblock_mgr {
-	uint8_t			dst;
-	uint8_t			channel;
-	uint32_t		state;
+	u8_t			dst;
+	u8_t			channel;
+	u32_t		state;
 
 	void			*smem_virt;
-	uint32_t		smem_addr;
-	uint32_t		smem_size;
+	u32_t		smem_addr;
+	u32_t		smem_size;
 
-	uint32_t		txblksz;
-	uint32_t		rxblksz;
-	uint32_t		txblknum;
-	uint32_t		rxblknum;
+	u32_t		txblksz;
+	u32_t		rxblksz;
+	u32_t		txblknum;
+	u32_t		rxblknum;
 
-	struct sblock_ring	*ring;
-	struct tcb_s	*thread;
-    pid_t            thread_pid;
+	struct sblock_ring	ring;
+	//struct tcb_s	*thread;
+
+    k_tid_t			pid;
+	struct k_thread	thread;
 
 	void			(*handler)(int event, void *data);
 	int			    (*callback)(int ch, void *data,int len);
@@ -124,36 +136,32 @@ struct sblock_mgr {
 #define CONFIG_SBLOCK_THREAD_DEFPRIO 50
 #define CONFIG_SBLOCK_THREAD_STACKSIZE 1024
 
-#ifdef CONFIG_64BIT
-#define SBLOCK_ALIGN_BYTES (8)
-#else
 #define SBLOCK_ALIGN_BYTES (4)
-#endif
 
-static inline uint32_t sblock_get_index(uint32_t x, uint32_t y)
+static inline u32_t sblock_get_index(u32_t x, u32_t y)
 {
 	return (x / y);
 }
 
-static inline uint32_t sblock_get_ringpos(uint32_t x, uint32_t y)
+static inline u32_t sblock_get_ringpos(u32_t x, u32_t y)
 {
 	return is_power_of_2(y) ? (x & (y - 1)) : (x % y);
 }
 
-int sblock_create(uint8_t dst, uint8_t channel,
-		uint32_t txblocknum, uint32_t txblocksize,
-		uint32_t rxblocknum, uint32_t rxblocksize);
-int sblock_release(uint8_t dst, uint8_t channel, struct sblock *blk);
-int sblock_get_free_count(uint8_t dst, uint8_t channel);
-int sblock_get_arrived_count(uint8_t dst, uint8_t channel);
-int sblock_receive(uint8_t dst, uint8_t channel, struct sblock *blk, int timeout);
-int sblock_send_finish(uint8_t dst, uint8_t channel);
-int sblock_send(uint8_t dst, uint8_t channel,uint8_t prio, struct sblock *blk);
-int sblock_send_prepare(uint8_t dst, uint8_t channel,uint8_t prio, struct sblock *blk);
-int sblock_get(uint8_t dst, uint8_t channel, struct sblock *blk, int timeout);
-void sblock_put(uint8_t dst, uint8_t channel, struct sblock *blk);
-int sblock_register_notifier(uint8_t dst, uint8_t channel,
+int sblock_create(u8_t dst, u8_t channel,
+		u32_t txblocknum, u32_t txblocksize,
+		u32_t rxblocknum, u32_t rxblocksize);
+int sblock_release(u8_t dst, u8_t channel, struct sblock *blk);
+int sblock_get_free_count(u8_t dst, u8_t channel);
+int sblock_get_arrived_count(u8_t dst, u8_t channel);
+int sblock_receive(u8_t dst, u8_t channel, struct sblock *blk, int timeout);
+int sblock_send_finish(u8_t dst, u8_t channel);
+int sblock_send(u8_t dst, u8_t channel,u8_t prio, struct sblock *blk);
+int sblock_send_prepare(u8_t dst, u8_t channel,u8_t prio, struct sblock *blk);
+int sblock_get(u8_t dst, u8_t channel, struct sblock *blk, int timeout);
+void sblock_put(u8_t dst, u8_t channel, struct sblock *blk);
+int sblock_register_notifier(u8_t dst, u8_t channel,
 		void (*handler)(int event, void *data), void *data);
-int sblock_register_callback(uint8_t channel,
+int sblock_register_callback(u8_t channel,
 		int (*callback)(int ch, void *data,int len));
 #endif

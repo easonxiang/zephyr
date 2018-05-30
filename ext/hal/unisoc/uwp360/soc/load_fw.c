@@ -161,6 +161,7 @@ int cp_check_running(void)
 			printk("CP FW is running !!!\n");
 			return 0;
 		}
+		k_sleep(60);
 	}while(cnt-- > 0);
 
 	printk("CP FW running fail,Something must be wrong\n");
