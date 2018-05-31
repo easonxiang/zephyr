@@ -38,6 +38,6 @@ int wifi_ifnet_ap_init(struct adapter *pAd);
 struct netif *wifi_ifnet_get_interface(struct adapter *pAd,int ctx_id);
 extern int wifi_ipc_send(int ch,int prio,void *data,int len, int offset);
 extern int wifi_get_mac(u8_t *mac,int idx);
-extern int wifi_ipc_channel_init(void);
+extern int wifi_ipc_init(void);
 
 #endif /* __WIFI_UWP360_H_ */

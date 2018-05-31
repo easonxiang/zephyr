@@ -38,12 +38,21 @@ static int sprdwl_npi_cmd_handler(wlnpi_t *wlnpi, unsigned char *s_buf, int s_le
 	ENG_LOG("%s type is %d, subtype %d\n", dbgstr, hdr->type, hdr->subtype);
 	iwnpi_hex_dump((unsigned char *)"s_buf:\n", strlen("s_buf:\n"), (unsigned char *)s_buf, s_len);
 
+	for(int i = 0; i < s_len; i++) {
+		printk("%02x ", s_buf[i]);
+	}
+	printk("\n");
 	ret = wifi_cmd_npi_send(ictx_id, s_buf, s_len, r_buf, r_len);
 	if (ret < 0)
 	{
 		ENG_LOG("npi command send or recv error!\n");
 		return ret;
 	}
+
+	for(int i = 0; i < *r_len; i++) {
+		printk("%02x ", r_buf[i]);
+	}
+	printk("\n");
 
 	recv_len = ret;
 	sprintf(dbgstr, "[iwnpi][RECV][%d]:", recv_len);
@@ -192,7 +201,7 @@ int iwnpi_main(int argc, char **argv)
 	}
 
 	msg_recv = (WLNPI_CMD_HDR_R *)r_buf;
-	r_len = ret;
+	//r_len = ret;
 
 	printk("msg_recv->type = %d, cmd->id = %d, subtype = %d, r_len = %d\n",
 		msg_recv->type, cmd->id, msg_recv->subtype, r_len);

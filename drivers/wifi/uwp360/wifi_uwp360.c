@@ -1225,7 +1225,7 @@ static int uwp360_init(struct device *dev)
 	}
 	wifi_get_mac(data->mac, 0);
 
-	wifi_ipc_channel_init();
+	wifi_ipc_init();
 	wifi_cmdevt_init();
 	wifi_txrx_init();
 

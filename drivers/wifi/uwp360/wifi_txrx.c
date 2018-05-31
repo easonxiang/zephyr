@@ -85,6 +85,7 @@ static struct k_thread txrx_thread_data;
 
 static struct k_sem	data_sem;
 extern int wifi_ipc_recv(int ch, u8_t **data,int *len, int offset);
+extern int wifi_cmd_handle_resp(char *data, int len);
 static void txrx_thread(void)
 {
 	int ret;
@@ -104,6 +105,7 @@ static void txrx_thread(void)
 		SYS_LOG_INF("Recieve data %p len %i", addr, len);
 
 		/* process data here */
+		wifi_cmd_handle_resp(addr, len);
 
 	}
 }

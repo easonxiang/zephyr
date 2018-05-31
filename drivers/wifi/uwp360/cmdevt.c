@@ -6,7 +6,7 @@
 
 #include "wifi_uwp360.h"
 
-#define RECV_BUF_SIZE 512
+#define RECV_BUF_SIZE 128 
 static unsigned char recv_buf[RECV_BUF_SIZE];
 static unsigned int recv_len;
 static struct k_sem	cmd_sem;
@@ -218,11 +218,16 @@ int wifi_cmd_config_ap(u8_t *pAd,struct apinfo *config)
 /*
  * return value is the real len sent to upper layer or -1 while error.
  */
+static unsigned char npi_buf[128];
 int wifi_cmd_npi_send(int ictx_id,char * t_buf,uint32_t t_len,char *r_buf,uint32_t *r_len)
 {
 	int ret = 0;
 
-	ret = wifi_cmd_send(CMD_SET_NPI,t_buf,t_len,r_buf,r_len);
+	/*FIXME add cmd header buffer.*/
+	memcpy(npi_buf + sizeof(struct trans_hdr), t_buf, t_len);
+	t_len += sizeof(struct trans_hdr);
+
+	ret = wifi_cmd_send(CMD_SET_NPI, npi_buf, t_len,r_buf,r_len);
 	if (ret < 0){
 		ipc_error("npi_send_command fail");
 		return -1;
@@ -244,9 +249,16 @@ int wifi_cmd_npi_get_mac(int ictx_id,char * buf)
 
 int wifi_cmd_handle_resp(char *data, int len)
 {
+	struct trans_hdr *hdr = (struct trans_hdr *)data;
+
 	if(len > RECV_BUF_SIZE) {
 		ipc_error("invalid data len %d.", len);
 		return -1;
+	}
+
+	if(hdr->response == 0) {
+		ipc_warn("This is invalid event?");
+		return 0;
 	}
 
 	memcpy(recv_buf, data, len);
@@ -256,10 +268,13 @@ int wifi_cmd_handle_resp(char *data, int len)
 	return 0;
 }
 
+static unsigned int seq = 1;
 int wifi_cmd_send(cmd_type type,char *data,int len,char * rbuf,int *rlen)
 {
 	int ret = 0;
 	ipc_info("--->");
+
+	struct trans_hdr *hdr = (struct trans_hdr *)data;
 
 	if (type > CMD_AP_MAX || type < CMD_GET_CP_VERSION){
 		ipc_error("Invalid command type %d ",type);
@@ -270,6 +285,10 @@ int wifi_cmd_send(cmd_type type,char *data,int len,char * rbuf,int *rlen)
 		ipc_error("data len Invalid,data=%p,len=%d",data,len);
 		return -1;
 	}
+
+	hdr->len = len;
+	hdr->type = type;
+	hdr->seq = seq++;
 
 	ret = wifi_tx_cmd(data, len);
 	if (ret < 0){

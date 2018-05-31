@@ -218,6 +218,8 @@ int smsg_msg_dispatch_thread(int argc, char *argv[])
 
 }
 
+#define APCP_SYNC_REG_WRITE 0x40a80000
+#define APCP_SYNC_REG_WRITE2 0x40a80004
 static void smsg_irq_handler(void *arg)
 {
 //	int prio;
@@ -232,6 +234,19 @@ static void smsg_irq_handler(void *arg)
 				sys_read32(rx_buf->rdptr));
 	}
 #endif
+
+
+	sys_write32(0x1, APCP_SYNC_REG_WRITE2 );
+	sys_read32( APCP_SYNC_REG_WRITE2 );
+	sys_read32( APCP_SYNC_REG_WRITE2 );
+
+	while(sys_read32( APCP_SYNC_REG_WRITE ) & 0x8000){;}
+
+	sys_write32(0x0, APCP_SYNC_REG_WRITE2 );
+	sys_read32( APCP_SYNC_REG_WRITE2 );
+	sys_read32( APCP_SYNC_REG_WRITE2 );
+
+
 
 	k_sem_give(&ipc->irq_sem);
 }

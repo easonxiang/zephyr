@@ -43,7 +43,8 @@ int wifi_ipc_send(int ch,int prio,void *data,int len, int offset)
     }
     ipc_info("wifi_send ch=%d prio=%d len=%d\n",ch,prio,len);
     memcpy(blk.addr+BLOCK_HEADROOM_SIZE+offset,data,len);
-    blk.length = len;
+
+    blk.length = len + BLOCK_HEADROOM_SIZE;
     ret = sblock_send(0, ch,prio,&blk);
 
     return ret;
@@ -56,13 +57,15 @@ int wifi_ipc_recv(int ch, u8_t **data,int *len, int offset)
 	u8_t *recvdata;
 
 	ret = sblock_receive(0, ch, &blk, 0);
-	*data = (u8_t *)blk.addr;
-	recvdata = (u8_t *)blk.addr;
-	ipc_info("sblock recv 0x%x %x %x %x %x %x %x",recvdata[0],recvdata[1],recvdata[2],
-			recvdata[3],recvdata[4],recvdata[5],recvdata[6]);
 	if (ret != 0) {
 		ipc_info("sblock recv error\n");
 	}
+	*data = (u8_t *)blk.addr;
+	*len = blk.length;
+	recvdata = (u8_t *)blk.addr;
+	ipc_info("sblock recv 0x%x %x %x %x %x %x %x",recvdata[0],recvdata[1],recvdata[2],
+			recvdata[3],recvdata[4],recvdata[5],recvdata[6]);
+	sblock_release(0, ch, &blk);
 	return ret;
 }
 
@@ -78,7 +81,7 @@ static int wifi_ipc_recv_callback(int channel,void *data,int len)
 	return 0;
 }
 
-int wifi_ipc_channel_init(void)
+int wifi_ipc_init(void)
 {
 	int ret = 0;
 
@@ -93,7 +96,7 @@ int wifi_ipc_channel_init(void)
 		return -1;
 	}
 	
-#if 1
+#if 0
 	ret = create_wifi_channel(SMSG_CH_WIFI_DATA_NOR);
 	if (ret < 0){
 		ipc_error("creater wifi event channel fail\n");
