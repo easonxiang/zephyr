@@ -1213,8 +1213,6 @@ static int uwp360_init(struct device *dev)
 	int ret;
 	struct wifi_data *data=DEV_DATA(dev);
 
-	ARG_UNUSED(dev);
-
 	data->connecting = false;
 	data->connected = false;
 	

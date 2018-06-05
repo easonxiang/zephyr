@@ -81,17 +81,18 @@ config SOC_FLASH_NIOS2_QSPI_DEV_NAME
 	  Specify the device name for the QSPI flash driver.
 
 config SOC_FLASH_UWP360
-   bool "Unisoc uwp360 flash driver"
-   depends on FLASH
-   default n
-   help
-       Enable Unisoc uwp360 flash driver.
+	bool "Unisoc uwp360 flash driver"
+	depends on FLASH
+	default n
+	select FLASH_HAS_DRIVER_ENABLED
+	help
+	  Enable Unisoc uwp360 flash driver.
 
 config FLASH_UWP360_NAME
    string
    prompt "Unisoc uwp360 flash name"
    depends on SOC_FLASH_UWP360
-   default "FLASH_UWP360"
+   default "UWP360_FLASH"
 
 source "drivers/flash/Kconfig.qmsi"
 

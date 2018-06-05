@@ -24,7 +24,7 @@
 struct flash_uwp360_config {
 	struct spi_flash flash;
 	struct spi_flash_params *params;
-	struct k_sem sem;
+	struct k_mutex lock;
 };
 
 /* Device run time data */
@@ -35,18 +35,18 @@ static struct flash_uwp360_config uwp360_config;
 static struct flash_uwp360_data uwp360_data;
 
 /*
- * This is named flash_uwp360_sem_take instead of flash_uwp360_lock (and
- * similarly for flash_uwp360_sem_give) to avoid confusion with locking
+ * This is named flash_uwp360_lock instead of flash_uwp360_lock (and
+ * similarly for flash_uwp360_unlock) to avoid confusion with locking
  * actual flash pages.
  */
-static inline void flash_uwp360_sem_take(struct device *dev)
+static inline void flash_uwp360_lock(struct device *dev)
 {
-	k_sem_take(&DEV_CFG(dev)->sem, K_FOREVER);
+	k_mutex_lock(&DEV_CFG(dev)->lock, K_FOREVER);
 }
 
-static inline void flash_uwp360_sem_give(struct device *dev)
+static inline void flash_uwp360_unlock(struct device *dev)
 {
-	k_sem_give(&DEV_CFG(dev)->sem);
+	k_mutex_unlock(&DEV_CFG(dev)->lock);
 }
 
 static int flash_uwp360_write_protection(struct device *dev, bool enable)
@@ -56,14 +56,14 @@ static int flash_uwp360_write_protection(struct device *dev, bool enable)
 
 	int ret = 0;
 
-	flash_uwp360_sem_take(dev);
+	flash_uwp360_lock(dev);
 
 	if(enable)
 		ret = flash->lock(flash, 0, flash->size);
 	else
 		ret = flash->unlock(flash, 0, flash->size);
 
-	flash_uwp360_sem_give(dev);
+	flash_uwp360_unlock(dev);
 
 	return ret;
 }
@@ -79,12 +79,13 @@ static int flash_uwp360_read(struct device *dev, off_t offset, void *data,
 		return 0;
 	}
 
-	flash_uwp360_sem_take(dev);
+	flash_uwp360_lock(dev);
 
 	//ret = flash->read(flash, offset, data, len, READ_SPI_FAST);
-	ret = flash->read(flash, offset, data, len, READ_SPI);
+	//ret = flash->read(flash, offset, data, len, READ_SPI);
+	memcpy(data, offset, len);
 
-	flash_uwp360_sem_give(dev);
+	flash_uwp360_unlock(dev);
 
 	return ret;
 }
@@ -99,11 +100,11 @@ static int flash_uwp360_erase(struct device *dev, off_t offset, size_t len)
 		return 0;
 	}
 
-	flash_uwp360_sem_take(dev);
+	flash_uwp360_lock(dev);
 
 	ret = flash->erase(flash, offset, len);
 
-	flash_uwp360_sem_give(dev);
+	flash_uwp360_unlock(dev);
 
 	return ret;
 }
@@ -119,11 +120,11 @@ static int flash_uwp360_write(struct device *dev, off_t offset,
 		return 0;
 	}
 
-	flash_uwp360_sem_take(dev);
+	flash_uwp360_lock(dev);
 
 	ret = flash->write(flash, offset, len, data);
 
-	flash_uwp360_sem_give(dev);
+	flash_uwp360_unlock(dev);
 
 	return ret;
 }
@@ -171,11 +172,10 @@ static int uwp360_flash_init(struct device *dev)
 	 * */
 	sci_write32(REG_AON_CLK_RF_CGM_SFC_2X_CFG, 0x4);
 
-#if 0
 	struct flash_uwp360_config *cfg = DEV_CFG(dev);
 	struct spi_flash *flash = &(cfg->flash);
-
-	k_sem_init(&cfg->sem, 1, 1);
+	k_mutex_init(&cfg->lock);
+#if 0
 
 	ret = sprd_spi_flash_init(flash, &(cfg->params));
 	if(!ret) {
