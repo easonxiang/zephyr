@@ -287,8 +287,12 @@ static void aon_uart_uwp360_isr(int ch, void *arg)
 {
 	struct device *dev = arg;
 	volatile struct uwp360_uart *uart = UART_STRUCT(dev);
+	struct uart_uwp360_dev_data_t * const dev_data = DEV_DATA(dev);
 
-	uwp360_uart_write(uart, uwp360_uart_read(uart));
+	if (dev_data->cb) {
+		dev_data->cb(dev);
+	}
+	//uwp360_uart_write(uart, uwp360_uart_read(uart));
 }
 
 static int aon_uart_uwp360_init(struct device *dev)

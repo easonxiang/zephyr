@@ -221,7 +221,7 @@ typedef struct msg_head_tag {
 } __attribute__((packed)) MSG_HEAD_T;
 
 
-int eng_diag(char *buf, int len);
+int eng_diag(struct device *uart, char *buf, int len);
 void eng_dump(unsigned char *buf, int len, int col, int flag, char *keyword);
 
 #endif

@@ -79,7 +79,6 @@ int wifi_rx_data(int channel,void *data,int len)
 }
 
 #define TXRX_STACK_SIZE		(1024)
-/*FIXME*/
 K_THREAD_STACK_MEMBER(txrx_stack, TXRX_STACK_SIZE);
 static struct k_thread txrx_thread_data;
 

@@ -73,9 +73,6 @@ extern void wifi_txrx_notify(void);
 extern int wifi_rx_event(int channel,void *data,int len);
 static int wifi_ipc_recv_callback(int channel,void *data,int len)
 {
-	ipc_info("--->\n");
-
-	//wifi_rx_event(channel, data, len);
 	wifi_txrx_notify();
 
 	return 0;
@@ -88,12 +85,12 @@ int wifi_ipc_init(void)
 	ret = create_wifi_channel(SMSG_CH_WIFI_CTRL);
 	if (ret < 0){
 		ipc_error("creater wifi event channel fail\n");
-		return -1;
+		return ret;
 	}
 	ret = sblock_register_callback(SMSG_CH_WIFI_CTRL,wifi_ipc_recv_callback);
 	if (ret < 0){
 		ipc_error("register event rx callback fail\n");
-		return -1;
+		return ret;
 	}
 	
 #if 0
