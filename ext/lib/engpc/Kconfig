@@ -3,8 +3,8 @@
 # see the file kconfig-language.txt in the NuttX tools repository.
 #
 
-config SYSTEM_ENGPC
+config ENGPC
 	bool "ENGPC test tool"
 	default n
-	---help---
+	help
 		Enable ENGPC test tool for bt/wifi npi test

@@ -118,7 +118,7 @@ int engpc_init(struct device *dev)
 
 	SYS_LOG_INF("open serial success");
 
-	k_sem_init(&uart_rx_sem, 0, 0);
+	k_sem_init(&uart_rx_sem, 0, UINT_MAX);
 
 	SYS_LOG_INF("start engpc thread.");
 	k_thread_create(&engpc_thread_data, engpc_stack,
@@ -130,4 +130,4 @@ int engpc_init(struct device *dev)
 	return 0;
 }
 
-//SYS_INIT(engpc_init, APPLICATION, 1);
+SYS_INIT(engpc_init, APPLICATION, 1);

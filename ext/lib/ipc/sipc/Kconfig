@@ -1,0 +1,5 @@
+config SIPC 
+        bool "sipc lib"
+        default n
+        help
+		  enbale sipc feature

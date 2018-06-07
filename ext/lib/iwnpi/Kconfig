@@ -1,15 +1,5 @@
-config SYSTEM_IWNPI
+config IWNPI
         bool "iwnpi tool for wifi npi test"
         default n
-        ---help---
-                Enable the iwnpi tool for wifi npi test
-if SYSTEM_IWNPI
-
-config SYSTEM_IWNPI_PROGNAME
-    string "Proram name"
-    default "iwnpi"
-    depends on BUILD_KERNEL
-    ---help---
-        This is the name of the program that will be use when the NSH ELF
-        program is installed.
-endif
+        help
+          Enable the iwnpi tool for wifi npi test

@@ -1208,6 +1208,7 @@ static const struct net_wifi_mgmt_offload uwp360_api = {
 	.disconnect	= uwp360_mgmt_disconnect,
 };
 
+extern int cp_mcu_init(void);
 static int uwp360_init(struct device *dev)
 {
 	int ret;

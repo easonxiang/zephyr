@@ -314,6 +314,6 @@ int wifi_cmd_send(cmd_type type,char *data,int len,char * rbuf,int *rlen)
 
 int wifi_cmdevt_init(void)
 {
-	k_sem_init(&cmd_sem, 0, 0);
+	k_sem_init(&cmd_sem, 0, 1);
 	return 0;
 }

@@ -1,0 +1,5 @@
+menuconfig SIPC
+	bool "Unisoc UWP360 SIPC"
+	default n
+	help
+	  This option enables the UWP360 SIPC feature.

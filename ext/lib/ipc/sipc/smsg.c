@@ -284,7 +284,7 @@ int smsg_ch_open(u8_t dst, u8_t channel,int prio, int timeout)
 		return -ENODEV;
 	}
 
-	k_sem_init(&ch->rxsem, 0, 0);
+	k_sem_init(&ch->rxsem, 0, 1);
 	k_mutex_init(&ch->rxlock);
 	k_mutex_init(&ch->txlock);
 
@@ -332,7 +332,6 @@ int smsg_ch_close(u8_t dst, u8_t channel, int prio, int timeout)
 	smsg_send(dst,prio, &mclose, timeout);
 
 	ch->state = CHAN_STATE_FREE;
-	wakeup_smsg_task_all(&ch->rxsem);
 
 	/* finally, update the channel state*/
 	ch->state = CHAN_STATE_UNUSED;
@@ -469,7 +468,7 @@ int smsg_recv(u8_t dst, struct smsg *msg, int timeout)
 				msg->channel, ch->rdptr, ch->wrptr);
 
 		if (ch->wrptr == ch->rdptr) {
-			ipc_warn("smsg_recv wait timeout!");
+			ipc_warn("smsg_recv none data!");
 			return -ETIME;
 		}
 	}
@@ -485,79 +484,6 @@ int smsg_recv(u8_t dst, struct smsg *msg, int timeout)
 			msg->channel, msg->type, msg->flag, msg->value,ch->wrptr, ch->rdptr, rd);
 
 	return 0;
-#if 0
-	ret = k_mutex_lock(&ch->rxlock, timeout);
-	if(ret) {
-		ipc_warn("smsg recv get mutex failed.\n");
-
-		goto recv_failed;
-	}
-
-	if (sys_read32(ch->wrptr) == sys_read32(ch->rdptr)) {
-		if (timeout == 0) {
-			ipc_warn("smsg rx cache is empty!\n");
-			ret = -ENODATA;
-
-			goto recv_failed;
-		} else if (timeout < 0) {
-			//pthread_mutex_lock(&(ch->rxlock));
-			/* wait forever */
-			//ret = wait_event_interruptible(ch->rxwait,(sys_read32(ch->wrptr) != sys_read32(ch->rdptr)) || (ipc->states[msg->channel] == CHAN_STATE_FREE));
-			ret = k_sem_take(&ch->rxsem, K_FOREVER);
-			if (ret < 0) {
-				ipc_warn("smsg_recv wait interrupted!\n");
-
-				goto recv_failed;
-			}
-
-			if (ch->state == CHAN_STATE_FREE) {
-				ipc_warn("smsg_recv smsg channel is free!\n");
-				ret = -EIO;
-
-				goto recv_failed;
-			}
-		} else {
-			//pthread_mutex_lock(&(ch->rxlock));
-			/* wait timeout */
-			//ret = wait_event_interruptible_timeout(ch->rxwait,
-			//	(sys_read32(ch->wrptr) != sys_read32(ch->rdptr)) ||
-			//	(ipc->states[msg->channel] == CHAN_STATE_FREE), timeout);
-			ret = k_sem_take(&ch->rxsem,timeout);
-			if (ret == -EBUSY) {
-				ipc_warn("smsg_recv wait interrupted!\n");
-
-				goto recv_failed;
-			} else if (ret == -EAGAIN) {
-				ipc_warn("smsg_recv wait timeout!\n");
-				ret = -ETIME;
-
-				goto recv_failed;
-			}
-
-			if (ch->state == CHAN_STATE_FREE) {
-				ipc_warn("smsg_recv smsg channel is free!\n");
-				ret = -EIO;
-
-				goto recv_failed;
-			}
-		}
-	}
-
-	k_mutex_lock(&ch->rxlock, K_FOREVER);
-	/* read smsg from cache */
-	rd = sys_read32(ch->rdptr) & (SMSG_CACHE_NR - 1);
-	memcpy(msg, &(ch->caches[rd]), sizeof(struct smsg));
-	sys_write32(sys_read32(ch->rdptr) + 1, ch->rdptr);
-	k_mutex_unlock(&ch->rxlock);
-
-	ipc_info("recv smsg: channel=%d, type=%d, flag=0x%04x, value=0x%08x wrptr=%d, rdptr=%d, rd=%d\n",
-			msg->channel, msg->type, msg->flag, msg->value,sys_read32(ch->wrptr), sys_read32(ch->rdptr), rd);
-
-recv_failed:
-	k_mutex_unlock(&ch->rxlock);
-	ch->refs--;
-	return ret;
-#endif
 }
 
 int smsg_init(u32_t dst, u32_t smsg_base)
@@ -574,7 +500,7 @@ int smsg_init(u32_t dst, u32_t smsg_base)
 
 	uwp360_ipi_set_callback(smsg_irq_handler, (void *)ipc);
 
-	k_sem_init(&ipc->irq_sem, 0, 0);
+	k_sem_init(&ipc->irq_sem, 0, 1);
 
 	ipc->pid = k_thread_create(&smsg_thread,
 			smsg_stack, SMSG_STACK_SIZE,

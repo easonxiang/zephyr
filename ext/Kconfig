@@ -18,6 +18,12 @@ source "ext/lib/ipc/open-amp/Kconfig"
 
 source "ext/lib/mgmt/Kconfig"
 
+source "ext/lib/ipc/sipc/Kconfig"
+
+source "ext/lib/iwnpi/Kconfig"
+
+source "ext/lib/engpc/Kconfig"
+
 source "ext/debug/Kconfig"
 
 endmenu

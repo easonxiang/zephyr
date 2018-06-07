@@ -303,8 +303,8 @@ int sblock_create(uint8_t dst, uint8_t channel,
 	}
 
     ring->yell = 1;
-    k_sem_init(&ring->getwait, 0, 0);   
-    k_sem_init(&ring->recvwait, 0, 0); 
+    k_sem_init(&ring->getwait, 0, 1);   
+    k_sem_init(&ring->recvwait, 0, 1); 
 
 	sblock->state = SBLOCK_STATE_READY;
 

@@ -15,132 +15,70 @@
 #include <shell/shell.h>
 #include <string.h>
 #include <misc/util.h>
+#include <fs.h>
+#include <uart.h>
+#include <stdlib.h>
+#include <logging/sys_log.h>
 
-#define RCC_BASE	0x40023800
-#define GPIOF_BASE	0x40021400
+#include <fs.h>
+#include <ff.h>
 
-#define RCC_AHB1ENR	RCC_BASE + 0x30
+#include "uwp360_hal.h"
+
+#ifdef SYS_LOG_DOMAIN
+#undef SYS_LOG_DOMAIN
+#endif
+#define SYS_LOG_DOMAIN	"UNISOC"
 
 #define GPIO_PORT0		"GPIO_P0"
-#define MARLIN_WDG		CONFIG_WDT_UWP360_DEVICE_NAME
-struct device *porte;
-struct device *portf;
-#define PORTF		"GPIOF"
-#define BEEP		8
-#define LED1		9
-#define LED2		10
-#define ON			0
-#define OFF			1
-
-#define PORTE		"GPIOE"
-#define BTN1		2
-#define BTN2		3
-#define BTN3		4
+#define UART_2			"UART_2"
+#define UWP360_WDG		CONFIG_WDT_UWP360_DEVICE_NAME
 
 #define GPIO0		0
 #define GPIO2		2
 
-void led_beep_init(struct device *dev)
-{
-	gpio_pin_configure(dev, LED1, GPIO_DIR_OUT
-				| GPIO_PUD_PULL_UP);
-	gpio_pin_configure(dev, LED2, GPIO_DIR_OUT
-				| GPIO_PUD_PULL_UP);
-	gpio_pin_configure(dev, BEEP, GPIO_DIR_OUT
-				| GPIO_PUD_PULL_UP);
-	gpio_pin_write(dev, LED1, OFF);
-	gpio_pin_write(dev, LED2, OFF);
-	/*
-	gpio_pin_write(dev, BEEP, 1);
-	k_sleep(100);
-	gpio_pin_write(dev, BEEP, 0);
-	*/
-}
+#define ON		1
+#define OFF		0
 
-void beep(struct device *dev)
-{
-	static int sw = OFF;
+typedef void (*uwp360_intc_callback_t) (int channel, void *user);
+extern void uwp360_intc_set_irq_callback(int channel,
+		uwp360_intc_callback_t cb, void *arg);
+extern void uwp360_intc_unset_irq_callback(int channel);
+extern void uwp360_aon_intc_set_irq_callback(int channel,
+		uwp360_intc_callback_t cb, void *arg);
+extern void uwp360_aon_intc_unset_irq_callback(int channel);
 
-	gpio_pin_write(dev, BEEP, sw);
-	sw = (sw == ON) ? OFF : ON;
-}
+void device_list_get(struct device **device_list, int *device_count);
 
-void led1_switch(struct device *dev)
+void led_switch(struct device *dev)
+
 {
 	static int sw = ON;
 
 	sw = (sw == ON) ? OFF : ON;
-	//gpio_pin_write(dev, LED1, sw);
 	gpio_pin_write(dev, GPIO2, sw);
 }
 
-void led2_switch(struct device *dev)
-{
-	static int sw = ON;
-
-	gpio_pin_write(dev, LED2, sw);
-	sw = (sw == ON) ? OFF : ON;
-}
+#if 0
 struct gpio_callback cb;
-static int cb_cnt;
-static int system_init = 0;
 
-static void callback_1(struct device *dev,
+static void gpio_callback(struct device *dev,
 		       struct gpio_callback *gpio_cb, u32_t pins)
 {
-	if(system_init){
-	printk("%s 0x%x triggered: %d\n", __func__, pins, ++cb_cnt);
-	if(pins & BIT(BTN1)) led1_switch(portf);
-	if(pins & BIT(BTN2)) led2_switch(portf);
-	//if(pins & BIT(BTN3)) beep(portf);
-	}
+	SYS_LOG_INF("main gpio int.\n");
 }
-
-static void callback_2(struct device *dev,
-		       struct gpio_callback *gpio_cb, u32_t pins)
-{
-	printk("gpio int.\n");
-}
-
-void btn_init(struct device *dev)
-{
-	gpio_pin_disable_callback(dev, BTN1);
-	gpio_pin_disable_callback(dev, BTN2);
-	gpio_pin_disable_callback(dev, BTN3);
-
-//	gpio_pin_configure(dev, BTN1, GPIO_DIR_IN
-//				| GPIO_PUD_PULL_UP);
-	gpio_pin_configure(dev, BTN1,
-			   GPIO_DIR_IN | GPIO_INT | GPIO_INT_EDGE | \
-			   GPIO_INT_ACTIVE_HIGH | GPIO_INT_DEBOUNCE);
-	gpio_pin_configure(dev, BTN2,
-			   GPIO_DIR_IN | GPIO_INT | GPIO_INT_EDGE | \
-			   GPIO_INT_ACTIVE_HIGH | GPIO_INT_DEBOUNCE);
-	gpio_pin_configure(dev, BTN3,
-			   GPIO_DIR_IN | GPIO_INT | GPIO_INT_EDGE | \
-			   GPIO_INT_ACTIVE_HIGH | GPIO_INT_DEBOUNCE);
-
-	gpio_init_callback(&cb, callback_1, BIT(BTN1)|BIT(BTN2)|BIT(BTN3));
-	gpio_add_callback(dev, &cb);
-
-	gpio_pin_enable_callback(dev, BTN1);
-	gpio_pin_enable_callback(dev, BTN2);
-	gpio_pin_enable_callback(dev, BTN3);
-}
+#endif
 
 void timer_expiry(struct k_timer *timer)
 {
-	//struct device *portf;
 	static int c = 0;
-	//portf = (struct device*)k_timer_user_data_get(timer);
-	//led2_switch(portf);
-	printk("timer_expiry %d.\n", c++);
+	SYS_LOG_INF("timer_expiry %d.", c++);
 }
 
 void timer_stop(struct k_timer *timer)
 {
 	static int c = 0;
-	printk("timer_stop %d.\n", c++);
+	SYS_LOG_INF("timer_stop %d.", c++);
 }
 
 void print_devices(void)
@@ -152,51 +90,65 @@ void print_devices(void)
 
 	//device_list_get(&device_list, &count);
 
-	printk("device list(%d):\n", count);
+	SYS_LOG_INF("device list(%d):", count);
 	for(i = 0; i < count; i++) {
-		printk(" %s\n ", device_list[i].config->name);
+		SYS_LOG_INF(" %s ", device_list[i].config->name);
 	}
 }
 
 /* WDT Requires a callback, there is no interrupt enable / disable. */
-void wdt_example_cb(struct device *dev)
+void wdt_example_cb(struct device *dev, int channel_id)
 {
 	struct device *gpio;
-	u32_t val;
 
 	gpio = device_get_binding(GPIO_PORT0);
 	if(gpio == NULL) {
-		printk("Can not find device %s.\n", GPIO_PORT0);
+		SYS_LOG_ERR("Can not find device %s.", GPIO_PORT0);
 		return;
 	}
 
-	gpio_pin_read(gpio, GPIO0, &val);
-
-	//printk("gpio0 val: %d.\n", val);
-
-	led1_switch(gpio);
-
-	wdt_reload(dev);
+	led_switch(gpio);
 }
 
 void wdg_init(void)
 {
+	int ret;
+	struct wdt_timeout_cfg wdt_cfg;
 	struct wdt_config wr_cfg;
 	struct wdt_config cfg;
 	struct device *wdt_dev;
+
+	wdt_cfg.callback = wdt_example_cb;
+	wdt_cfg.flags = WDT_FLAG_RESET_SOC;
+	wdt_cfg.window.min = 0;
+	wdt_cfg.window.max = 4000;
 
 	wr_cfg.timeout = 4000;
 	wr_cfg.mode = WDT_MODE_INTERRUPT_RESET;
 	wr_cfg.interrupt_fn = wdt_example_cb;
 
-	wdt_dev = device_get_binding(MARLIN_WDG);
+	wdt_dev = device_get_binding(UWP360_WDG);
 	if(wdt_dev == NULL) {
-		printk("Can not find device %s.\n", MARLIN_WDG);
+		SYS_LOG_ERR("Can not find device %s.", UWP360_WDG);
 		return;
 	}
 
+#if 0
+	ret = wdt_install_timeout(wdt_dev, &wdt_cfg);
+	if (ret < 0) {
+		SYS_LOG_ERR("wdt install error.");
+		return;
+	}
+
+	ret = wdt_setup(wdt_dev, 0);
+	if (ret < 0) {
+		SYS_LOG_ERR("Watchdog setup error\n");
+		return;
+	}
+#endif
 	wdt_set_config(wdt_dev, &wr_cfg);
 	wdt_enable(wdt_dev);
+
 
 	wdt_get_config(wdt_dev, &cfg);
 }
@@ -216,9 +168,9 @@ void spi_flash_test(void)
 
 	printk("\nW25QXXDV SPI flash testing\n");
 	printk("==========================\n");
-	printk("flash name:%s.\n",CONFIG_FLASH_MARLIN_NAME);
+	printk("flash name:%s.\n",CONFIG_FLASH_UWP360_NAME);
 
-	flash_dev = device_get_binding(CONFIG_FLASH_MARLIN_NAME);
+	flash_dev = device_get_binding(CONFIG_FLASH_UWP360_NAME);
 
 	if (!flash_dev) {
 		printk("SPI flash driver was not found!\n");
@@ -271,35 +223,62 @@ void spi_flash_test(void)
 
 void uart_test(void)
 {
-	int i = 100;
+	struct device *uart;
+	char *str = "This is a test message from test command.\r\n";
+	
+	uart = device_get_binding(UART_2);
+	if(uart == NULL) {
+		SYS_LOG_ERR("Can not find device %s.", UART_2);
+		return;
+	}
+
+	uart_irq_rx_enable(uart);
+
+	uart_fifo_fill(uart, str, strlen(str));
+#if 0
 	while(i--) {
-		printk("%iwfsadklsdffffffasdffffffwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwweeeertterd\n\n", i);
+		uart_poll_out(uart, 'a');
+	}
+#endif
+
+	SYS_LOG_INF("test uart %s finish.", UART_2);
+}
+
+static void intc_uwp360_soft_irq(int channel, void *data)
+{
+	if(data) {
+		SYS_LOG_INF("aon soft irq.");
+		uwp360_aon_irq_clear_soft();
+	} else {
+		SYS_LOG_INF("soft irq.");
+		uwp360_irq_clear_soft();
 	}
 }
 
 static int test_cmd(int argc, char *argv[])
 {
-	struct device *gpio;
-	u32_t val;
-
 	if(argc < 2) return -EINVAL;
 
-	if(!strcmp(argv[1], "gpio")) {
-
-		gpio = device_get_binding(GPIO_PORT0);
-		if(gpio == NULL) {
-			printk("Can not find device %s.\n", GPIO_PORT0);
-			return -EINVAL;
-		}
-
-		gpio_pin_read(gpio, GPIO0, &val);
-		printk("gpio 0 val: %d.\n", val);
-
-		return 0;
-	}else if(!strcmp(argv[1], "flash")) {
+	if(!strcmp(argv[1], "flash")) {
 		//spi_flash_test();
 	}else if(!strcmp(argv[1], "uart")) {
 		uart_test();
+	}else if(!strcmp(argv[1], "intc")) {
+		uwp360_intc_set_irq_callback(INT_SOFT, intc_uwp360_soft_irq, (void*)0);
+		uwp360_irq_enable(INT_SOFT);
+
+		uwp360_irq_trigger_soft();
+
+		uwp360_irq_disable(INT_SOFT);
+		uwp360_intc_unset_irq_callback(INT_SOFT);
+	}else if(!strcmp(argv[1], "aon_intc")) {
+		uwp360_aon_intc_set_irq_callback(INT_SOFT, intc_uwp360_soft_irq, (void*)1);
+		uwp360_aon_irq_enable(INT_SOFT);
+
+		uwp360_aon_irq_trigger_soft();
+
+		uwp360_aon_irq_disable(INT_SOFT);
+		uwp360_aon_intc_unset_irq_callback(INT_SOFT);
 	}else {
 		return -EINVAL;
 	}
@@ -311,34 +290,233 @@ static int info_cmd(int argc, char *argv[])
 {
 	if(argc != 1) return -EINVAL;
 
-	printk("System Info: \n\n");
+	SYS_LOG_INF("System Info: \n");
 
 	print_devices();
 
 	return 0;
 }
 
+static int sleep_cmd(int argc, char *argv[])
+{
+	int time;
+	
+	if(argc != 2) return -EINVAL;
+
+	time = atoi(argv[1]);
+	SYS_LOG_INF("sleep %ims start...", time);
+
+	k_sleep(time);
+
+	SYS_LOG_INF("sleep stop.");
+
+	return 0;
+}
+
+static int dev_cmd(int argc, char **argv)
+{
+	struct device *devices;
+	int count;
+	int i,j = 1;
+
+	device_list_get(&devices, &count);
+
+	SYS_LOG_INF("System device lists:");
+	for (i = 0; i < count; i++, devices++) {
+		if(strcmp(devices->config->name, "") == 0)
+			continue;
+		SYS_LOG_INF("%d: %s.", j++, devices->config->name);
+	}
+
+	return 0;
+}
+
+u32_t str2hex(char *s)
+{
+	u32_t val = 0;
+	int len;
+	int i;
+	char c;
+
+	if (strncmp(s, "0x", 2) && strncmp(s, "0X", 2)) {
+		SYS_LOG_ERR("Invalid hex string: %s.", s);
+		return 0;
+	}
+
+	/* skip 0x */
+	s += 2;
+
+	len = strlen(s);
+	if(len > 8) {
+		SYS_LOG_ERR("Invalid hex string.");
+		return 0;
+	}
+
+	for (i = 0; i < len; i++) {
+		c = *s;
+
+		/* 0 - 9 */
+		if(c >= '0' && c <= '9')
+			c -= '0';
+		else if (c >= 'A' && c <= 'F') 
+			c = c - 'A' + 10;
+		else if (c >= 'a' && c <= 'f')
+			c = c - 'a' + 10;
+		else {
+			SYS_LOG_ERR("Invalid hex string.");
+			return 0;
+		}
+
+		val = val * 16 + c;
+
+		s++;
+	}
+
+
+	return val;
+}
+
+u32_t str2data(char *s)
+{
+	if (strncmp(s, "0x", 2) == 0 || strncmp(s, "0X", 2) == 0)
+		return str2hex(s);
+	else
+		return atoi(s);
+}
+
+void read8_cmd_exe(u32_t addr, u32_t len)
+{
+	int i;
+	SYS_LOG_INF("Read data from 0x%x:", addr);
+	
+	for(i = 0; i < len; i++, addr++) {
+		if(i%16 == 0) printk("\n%08x: ", addr );
+		printk("%02x ", sys_read8(addr));
+	}
+	printk("\n");
+}
+
+static int read8_cmd(int argc, char **argv)
+{
+	u32_t addr;
+	u32_t len;
+	if(argc != 3) return -EINVAL;
+
+	addr = (u32_t)str2data(argv[1]);
+	len = str2data(argv[2]);
+
+	read8_cmd_exe(addr, len);
+
+	return 0;
+}
+void read32_cmd_exe(u32_t addr, u32_t len)
+{
+	int i;
+	SYS_LOG_INF("Read data from 0x%x:", addr);
+	
+	for(i = 0; i < len; i++, addr += 4) {
+		if(i%4 == 0) printk("\n%08x: ", addr );
+		printk("%08x ", sys_read32(addr));
+	}
+	printk("\n");
+}
+
+static int read32_cmd(int argc, char **argv)
+{
+	u32_t addr;
+	u32_t len;
+	if(argc != 3) return -EINVAL;
+
+	addr = (u32_t)str2data(argv[1]);
+	len = str2data(argv[2]);
+
+	read32_cmd_exe(addr, len);
+
+	return 0;
+}
+
+static int write_cmd(int argc, char **argv)
+{
+	u32_t p;
+	u32_t val;
+	if(argc != 3) return -EINVAL;
+
+	p = str2data(argv[1]);
+	val = str2data(argv[2]);
+
+	sys_write32(val, p);
+
+	SYS_LOG_INF("Write data 0x%x to address 0x%x success.",
+			val, p);
+
+	return 0;
+}
+
+extern int iwnpi_main(int argc, char **argv);
+static int iwnpi_cmd(int argc, char **argv)
+{
+	iwnpi_main(argc, argv);
+	return 0;
+}
+#if 0
+/* NFFS work area strcut */
+static struct nffs_flash_desc flash_desc;
+
+/* mounting info */
+static struct fs_mount_t nffs_mnt = {
+	.type = FS_NFFS,
+	.mnt_point = "/zephyr",
+	.fs_data = &flash_desc,
+};
+
+static int test_mount(void)
+{
+	struct device *flash_dev;
+	int res;
+
+	flash_dev = device_get_binding(CONFIG_FS_NFFS_FLASH_DEV_NAME);
+	if (!flash_dev) {
+		printk("get flash %s failed.\n", CONFIG_FS_NFFS_FLASH_DEV_NAME);
+		return -ENODEV;
+	}
+	printk("get flash %s success.\n", CONFIG_FS_NFFS_FLASH_DEV_NAME);
+
+	/* set backend storage dev */
+	nffs_mnt.storage_dev = flash_dev;
+
+	res = fs_mount(&nffs_mnt);
+	if (res < 0) {
+		printk("Error mounting nffs [%d]\n", res);
+		return -1;
+	}
+
+	printk("mount success.\n");
+
+	return 0;
+}
+
+static int flash_cmd(int argc, char **argv)
+{
+	int ret;
+
+	if(!strcmp(argv[1], "mount")) {
+		ret = test_mount();
+	}
+	return 0;
+}
+#endif
+
+
 static const struct shell_cmd zephyr_cmds[] = {
 	{ "info", info_cmd, "" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
-	{ "test", test_cmd, "<gpio|flash|uart>" },
+	{ "sleep", sleep_cmd, "time(ms)" },
+	{ "test", test_cmd, "<flash|uart|intc|aon_intc>" },
+	{ "device", dev_cmd, "" },
+	{ "read8", read8_cmd, "adress len" },
+	{ "read32", read32_cmd, "adress len" },
+	{ "write32", write_cmd, "adress value" },
+	{ "iwnpi", iwnpi_cmd, "adress value" },
+//	{ "flash", flash_cmd, "mount|read|write address value" },
 	{ NULL, NULL }
 };
 
@@ -348,44 +526,86 @@ void gpio_init(void)
 
 	gpio = device_get_binding(GPIO_PORT0);
 	if(gpio == NULL) {
-		printk("Can not find device %s.\n", GPIO_PORT0);
+		SYS_LOG_ERR("Can not find device %s.", GPIO_PORT0);
 		return;
 	}
-
-	gpio_pin_disable_callback(gpio, GPIO0);
-
-	gpio_pin_configure(gpio, GPIO0,
-			   GPIO_DIR_IN | GPIO_INT | GPIO_INT_EDGE | \
-			   GPIO_INT_ACTIVE_HIGH | GPIO_INT_DEBOUNCE);
 
 	gpio_pin_configure(gpio, GPIO2, GPIO_DIR_OUT
 				| GPIO_PUD_PULL_DOWN);
 
-	gpio_init_callback(&cb, callback_2, BIT(GPIO0));
+#if 0
+	gpio_pin_disable_callback(gpio, GPIO0);
+
+	gpio_pin_configure(gpio, GPIO0,
+			   GPIO_DIR_IN | GPIO_INT | GPIO_INT_LEVEL | \
+			   GPIO_INT_ACTIVE_LOW | GPIO_PUD_PULL_UP);
+
+	gpio_init_callback(&cb, gpio_callback, BIT(GPIO0));
 	gpio_add_callback(gpio, &cb);
 
 	gpio_pin_enable_callback(gpio, GPIO0);
+#endif
 }
 
+#if 1
+#define FATFS_MNTP "/NAND:"
+/* FatFs work area */
+static FATFS fat_fs;
+
+/* mounting info */
+static struct fs_mount_t fatfs_mnt = {
+	.type = FS_FATFS,
+	.mnt_point = FATFS_MNTP,
+	.fs_data = &fat_fs,
+};
+
+void fs_test(void)
+{
+	int res;
+
+	res = fs_mount(&fatfs_mnt);
+	if (res < 0) {
+		SYS_LOG_ERR("Error mounting fs [%d]\n", res);
+		return;
+	}
+
+}
+#endif
+
+extern int cp_mcu_init(void);
 void main(void)
 {
-	struct k_timer timer;
-
-	wdg_init();
-
-	gpio_init();
+	int ret;
+	//struct k_timer timer;
+	SYS_LOG_INF("hello world.");
 
 	SHELL_REGISTER("zephyr", zephyr_cmds);
 
 	shell_register_default_module("zephyr");
 
-	while(1){}
+	gpio_init();
+	wdg_init();
 
+	fs_test();
+
+	while(1) {}
+	read32_cmd_exe(0x40838000, 0x10);
+
+	ret = cp_mcu_init();
+	if(ret) {
+		printk("firmware download failed %i.", ret);
+		return;
+	}
+
+	read32_cmd_exe(0x40838000, 0x10);
+	//uwp360_aon_irq_enable(AON_INT_GPIO0);
+
+#if 0
 	k_timer_init(&timer, timer_expiry, timer_stop);
 	k_timer_user_data_set(&timer, (void *)portf);
-	printk("start timer..\n");
+	SYS_LOG_INF("start timer..\n");
 	k_timer_start(&timer, K_SECONDS(1), K_SECONDS(5));
+#endif
 
-	while(1) {
-	}
+	while(1) {}
 }

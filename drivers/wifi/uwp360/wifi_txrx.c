@@ -116,7 +116,7 @@ void wifi_txrx_notify(void)
 
 int wifi_txrx_init(void)
 {
-	k_sem_init(&data_sem, 0, 0);
+	k_sem_init(&data_sem, 0, 1);
 
 	k_thread_create(&txrx_thread_data, txrx_stack,
 			TXRX_STACK_SIZE,
