@@ -20,6 +20,7 @@
 #include <net/net_pkt.h>
 #include <net/net_if.h>
 #include <net/ethernet.h>
+#include <net/net_l2.h>
 
 #include "wifi_main.h"
 #include "wifi_rf.h"
@@ -448,12 +449,14 @@ NET_DEVICE_INIT(uwp_sta, CONFIG_WIFI_STA_DRV_NAME,
 		uwp_init, &uwp_wifi_sta_priv, NULL,
 		CONFIG_WIFI_INIT_PRIORITY,
 		&uwp_api,
-		ETHERNET_L2, NET_L2_GET_CTX_TYPE(ETHERNET_L2),
+		WIFI_L2, NET_L2_GET_CTX_TYPE(WIFI_L2),
 		MTU);
 
+#if 0
 NET_DEVICE_INIT(uwp_ap, CONFIG_WIFI_AP_DRV_NAME,
 		uwp_init, &uwp_wifi_ap_priv, NULL,
 		CONFIG_WIFI_INIT_PRIORITY,
 		&uwp_api,
 		ETHERNET_L2, NET_L2_GET_CTX_TYPE(ETHERNET_L2),
 		MTU);
+#endif

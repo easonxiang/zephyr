@@ -1,0 +1,17 @@
+#
+# Copyright (c) 2016 Intel Corporation.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+menuconfig NET_L2_WIFI
+	bool "Enable WIFI link layer"
+	help
+	  Add support for WIFI link layer.
+
+if NET_L2_WIFI
+module = NET_L2_WIFI
+module-dep = NET_LOG
+module-str = Log level for IEEE 802.15.4
+module-help = Enables IEEE 802.15.4 code to output debug messages.
+endif

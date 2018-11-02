@@ -18,6 +18,10 @@ if(CONFIG_NET_L2_OPENTHREAD)
   add_subdirectory(openthread)
 endif()
 
+if(CONFIG_NET_L2_WIFI)
+  add_subdirectory(wifi)
+endif()
+
 if(CONFIG_NET_L2_WIFI_MGMT OR CONFIG_NET_L2_WIFI_SHELL)
   add_subdirectory(wifi_offload)
 endif()
