@@ -65,7 +65,7 @@ static int uart_uwp_poll_in(struct device *dev, unsigned char *c)
 {
 	volatile struct uwp_uart *uart = UART_STRUCT(dev);
 
-	if (malin_uart_rx_ready(uart)) {
+	if (uwp_uart_rx_ready(uart)) {
 		*c = uwp_uart_read(uart);
 		return 0;
 	}
@@ -77,7 +77,7 @@ static unsigned char uart_uwp_poll_out(struct device *dev, unsigned char c)
 {
 	volatile struct uwp_uart *uart = UART_STRUCT(dev);
 
-	if (malin_uart_tx_ready(uart)) {
+	if (uwp_uart_tx_ready(uart)) {
 		uwp_uart_write(uart, c);
 		while (!uwp_uart_trans_over(uart))
 			;
@@ -97,7 +97,7 @@ static int uart_uwp_fifo_fill(struct device *dev, const u8_t *tx_data,
 
 	while ((size - num_tx) > 0) {
 		/* Send a character */
-		if (malin_uart_tx_ready(uart)) {
+		if (uwp_uart_tx_ready(uart)) {
 			uwp_uart_write(uart, tx_data[num_tx]);
 			num_tx++;
 		} else {
@@ -115,7 +115,7 @@ static int uart_uwp_fifo_read(struct device *dev, u8_t *rx_data,
 	volatile struct uwp_uart *uart = UART_STRUCT(dev);
 
 	while (((size - num_rx) > 0) &&
-			malin_uart_rx_ready(uart)) {
+			uwp_uart_rx_ready(uart)) {
 
 		/* Receive a character */
 		rx_data[num_rx++] = uwp_uart_read(uart);
@@ -176,7 +176,7 @@ static int uart_uwp_irq_rx_ready(struct device *dev)
 {
 	volatile struct uwp_uart *uart = UART_STRUCT(dev);
 
-	return malin_uart_rx_ready(uart);
+	return uwp_uart_rx_ready(uart);
 }
 
 static void uart_uwp_irq_err_enable(struct device *dev)
